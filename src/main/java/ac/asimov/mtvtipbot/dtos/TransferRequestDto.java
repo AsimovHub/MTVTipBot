@@ -1,6 +1,5 @@
 package ac.asimov.mtvtipbot.dtos;
 
-import ac.asimov.asimovswap.models.WalletAccount;
 
 import java.math.BigDecimal;
 
