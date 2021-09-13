@@ -1,5 +1,6 @@
 package ac.asimov.mtvtipbot.commands;
 
+import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand;
@@ -31,13 +32,23 @@ public class HelpCommand implements IBotCommand {
 
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] strings) {
-        SendMessage helpMessage = new SendMessage();
-        helpMessage.setChatId(message.getChatId().toString());
-        helpMessage.enableHtml(true);
-        helpMessage.setText("Java Telegram Bot Test1 23: " + getCommandIdentifier());
+        try {
+            SendMessage helpMessage = new SendMessage();
+            helpMessage.setChatId(message.getChatId().toString());
+            helpMessage.setReplyToMessageId(message.getMessageId());
+            helpMessage.enableMarkdownV2(true);
+            String escaped = MessageFormatHelper.escapeString("^[](){}´`+*#'.:?,;!s Bot-_.Test1/23: " + getCommandIdentifier());
+            helpMessage.setText(escaped);
+            absSender.execute(helpMessage);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
 
         try {
-
+            SendMessage helpMessage = new SendMessage();
+            helpMessage.setChatId(message.getChatId().toString());
+            helpMessage.enableMarkdownV2(true);
+            helpMessage.setText(MessageFormatHelper.escapeString("Private Message " + getCommandIdentifier()));
             absSender.execute(helpMessage);
         } catch (TelegramApiException e) {
             e.printStackTrace();

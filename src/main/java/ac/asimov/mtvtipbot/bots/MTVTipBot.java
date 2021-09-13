@@ -23,7 +23,7 @@ public class MTVTipBot extends TelegramLongPollingCommandBot {
         logger.info("Creating TipBotCommand");
 
         register(new StartCommand("start", "Start the bot"));
-        // register(new HelpCommand("help", "Show this help"));
+        register(new HelpCommand("help", "Show this help"));
         register(new InfoCommand("info", "Get more information about this tip bot"));
 
 
@@ -33,7 +33,7 @@ public class MTVTipBot extends TelegramLongPollingCommandBot {
         register(new AccountCommand("account", "Show your account address"));
         register(new BalanceCommand("balance", "Show your account balance"));
 
-        register(new SendCommand("send", "Send given tip amount to the given user"));
+        register(new SendCommand("mtvsend", "Send given tip amount to the given user"));
         register(new WithdrawCommand("withdraw", "Withdraw given amount of MTV to your given wallet"));
     }
 

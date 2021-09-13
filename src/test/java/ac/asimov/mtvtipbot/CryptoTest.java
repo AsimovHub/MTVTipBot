@@ -1,5 +1,6 @@
 package ac.asimov.mtvtipbot;
 
+import ac.asimov.mtvtipbot.blockchain.MultiVACBlockchainGateway;
 import ac.asimov.mtvtipbot.dtos.EncryptionPairDto;
 import ac.asimov.mtvtipbot.helper.CryptoHelper;
 import org.junit.jupiter.api.Test;
@@ -17,11 +18,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.web3j.crypto.ECKeyPair;
 import org.web3j.crypto.Keys;
-import org.web3j.crypto.WalletUtils;
 
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,17 +38,24 @@ class CryptoTest {
 
 	@Test
 	public void testUserIdToKey() throws Exception {
-		assertTrue(false);
-
-
-		// TODO
-
-		String userId = "";
-
-
+		String userId = "123456890";
 		String hashedResult = CryptoHelper.userIdToKey(userId);
-		String correctHashedResult = "";
+		String correctHashedResult = "3c37ccb27683f19f61debaf31fd3743f";
+		assertEquals(hashedResult, correctHashedResult);
 
+		userId = "112233449988";
+		hashedResult = CryptoHelper.userIdToKey(userId);
+		correctHashedResult = "dd0dc8220bed0d3891cab8c955402650";
+		assertEquals(hashedResult, correctHashedResult);
+
+		userId = "1286367821";
+		hashedResult = CryptoHelper.userIdToKey(userId);
+		correctHashedResult = "fb28f0c6bc0d61bafcb8e7a0acf32040";
+		assertEquals(hashedResult, correctHashedResult);
+
+		userId = "8712768218";
+		hashedResult = CryptoHelper.userIdToKey(userId);
+		correctHashedResult = "fa1c25f1aaabc9a677bb84e1edfcba7d";
 		assertEquals(hashedResult, correctHashedResult);
 	}
 

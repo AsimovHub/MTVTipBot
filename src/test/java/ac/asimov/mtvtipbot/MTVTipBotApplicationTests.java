@@ -1,6 +1,6 @@
 package ac.asimov.mtvtipbot;
 
-import ac.asimov.mtvtipbot.helper.CryptoHelper;
+import ac.asimov.mtvtipbot.blockchain.MultiVACBlockchainGateway;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;

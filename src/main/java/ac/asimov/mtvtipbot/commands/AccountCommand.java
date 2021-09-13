@@ -36,6 +36,7 @@ public class AccountCommand implements IBotCommand {
         } else {
             SendMessage helpMessage = new SendMessage();
             helpMessage.setChatId(message.getChatId().toString());
+            helpMessage.setReplyToMessageId(message.getMessageId());
             helpMessage.enableHtml(true);
             helpMessage.setText("This command can only be used in private chat. Send me a message!");
         }

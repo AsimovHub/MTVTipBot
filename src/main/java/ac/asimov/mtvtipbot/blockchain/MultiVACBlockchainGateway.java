@@ -1,4 +1,4 @@
-package ac.asimov.mtvtipbot;
+package ac.asimov.mtvtipbot.blockchain;
 
 import ac.asimov.mtvtipbot.dtos.*;
 import org.apache.commons.lang3.StringUtils;

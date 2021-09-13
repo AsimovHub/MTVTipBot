@@ -33,6 +33,7 @@ public class RegisterCommand implements IBotCommand {
     public void processMessage(AbsSender absSender, Message message, String[] strings) {
         SendMessage helpMessage = new SendMessage();
         helpMessage.setChatId(message.getChatId().toString());
+        helpMessage.setReplyToMessageId(message.getMessageId());
         helpMessage.enableHtml(true);
         if (message.getChat().isUserChat()) {
 
