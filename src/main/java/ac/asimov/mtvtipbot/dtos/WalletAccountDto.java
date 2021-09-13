@@ -12,10 +12,6 @@ public class WalletAccountDto {
 
     public WalletAccountDto() {}
 
-    public WalletAccountDto(String privateKey) {
-        this.privateKey = privateKey;
-    }
-
     public WalletAccountDto(String privateKey, String receiverAddress) {
         this.privateKey = privateKey;
         this.receiverAddress = receiverAddress;
