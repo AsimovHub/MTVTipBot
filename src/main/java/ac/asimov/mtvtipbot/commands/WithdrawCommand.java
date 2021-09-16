@@ -31,15 +31,17 @@ public class WithdrawCommand implements IBotCommand {
 
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] strings) {
-        SendMessage helpMessage = new SendMessage();
-        helpMessage.setChatId(message.getChatId().toString());
-        helpMessage.setReplyToMessageId(message.getMessageId());
-        helpMessage.enableHtml(true);
-        helpMessage.setText("Java Telegram Bot Test1 23: " + getCommandIdentifier());
+        SendMessage messageObject = new SendMessage();
+
+        messageObject.setChatId(message.getChatId().toString());
+        messageObject.setReplyToMessageId(message.getMessageId());
+        messageObject.enableMarkdownV2(true);
+
+        messageObject.setText("Java Telegram Bot Test1 23: " + getCommandIdentifier());
 
         try {
 
-            absSender.execute(helpMessage);
+            absSender.execute(messageObject);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }

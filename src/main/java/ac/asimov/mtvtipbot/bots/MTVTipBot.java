@@ -44,6 +44,9 @@ public class MTVTipBot extends TelegramLongPollingCommandBot {
 
     @Override
     public void processNonCommandUpdate(Update update) {
+
+        // TODO: take a look user exist and username must be changed
+
     }
 
     @Override

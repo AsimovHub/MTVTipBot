@@ -1,8 +1,12 @@
 package ac.asimov.mtvtipbot.commands;
 
-import ac.asimov.mtvtipbot.dao.UserDao;
+import ac.asimov.mtvtipbot.dtos.ResponseWrapperDto;
+import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
+import ac.asimov.mtvtipbot.model.User;
+import ac.asimov.mtvtipbot.service.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -11,6 +15,9 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 public class AccountCommand implements IBotCommand {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    private UserService userService;
 
     private final String commandIdentifier;
     private final String commandDescription;
@@ -32,22 +39,38 @@ public class AccountCommand implements IBotCommand {
 
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] strings) {
+        SendMessage messageObject = new SendMessage();
+        messageObject.setChatId(message.getChatId().toString());
+        messageObject.setReplyToMessageId(message.getMessageId());
+        messageObject.enableMarkdownV2(true);
+
         if (message.getChat().isUserChat()) {
             // DO YOUR STUFF
-        } else {
-            SendMessage helpMessage = new SendMessage();
-            helpMessage.setChatId(message.getChatId().toString());
-            helpMessage.setReplyToMessageId(message.getMessageId());
-            helpMessage.enableHtml(true);
-            helpMessage.setText("This command can only be used in private chat. Send me a message!");
-        }
-        SendMessage helpMessage = new SendMessage();
-        helpMessage.setChatId(message.getChatId().toString());
-        helpMessage.enableHtml(true);
-        helpMessage.setText("Java Telegram Bot Test1 23: " + getCommandIdentifier());
 
+            try {
+                String messageString;
+                Long userId = absSender.getMe().getId();
+                ResponseWrapperDto<User> userResponse = userService.getUserByUserId(userId);
+                if (userResponse.hasErrors()) {
+                    messageString = "Error during account initialization. Please notify developer";
+                } else {
+                    if (userResponse.getResponse() == null) {
+                        messageString = "You do not have an account yet. Please use /register";
+                    } else {
+                        messageString = "Your wallet address is: [" + userResponse.getResponse().getPublicKey() + "](https://e.mtv.ac/account.html?address=" + userResponse.getResponse().getPublicKey() + ")";
+                    }
+                }
+                messageObject.setText(MessageFormatHelper.appendDisclaimer(messageString, true));
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+                messageObject.setText(MessageFormatHelper.escapeString("Cannot determine userdata"));
+            }
+
+        } else {
+            messageObject.setText(MessageFormatHelper.escapeString("This command can only be used in private chat. Send me a message!"));
+        }
         try {
-            absSender.execute(helpMessage);
+            absSender.execute(messageObject);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }

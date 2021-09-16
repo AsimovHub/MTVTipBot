@@ -104,12 +104,12 @@ function decrypt(hash, secret, salt) {
         return decrypted;
     }
 
-    public static String userIdToKey(String userId) throws Exception {
-        if (StringUtils.isBlank(userId)) {
+    public static String userIdToKey(Long userId) throws Exception {
+        if (userId == null || userId == 0) {
             throw new Exception("Empty input");
         }
         MessageDigest md = MessageDigest.getInstance("MD5");
-        md.update(userId.getBytes(StandardCharsets.UTF_8));
+        md.update(userId.toString().getBytes(StandardCharsets.UTF_8));
         byte[] result = md.digest();
         return Hex.encodeHexString(result);
     }

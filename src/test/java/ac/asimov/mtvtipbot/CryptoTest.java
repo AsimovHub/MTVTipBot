@@ -38,22 +38,22 @@ class CryptoTest {
 
 	@Test
 	public void testUserIdToKey() throws Exception {
-		String userId = "123456890";
+		Long userId = 123456890L;
 		String hashedResult = CryptoHelper.userIdToKey(userId);
 		String correctHashedResult = "3c37ccb27683f19f61debaf31fd3743f";
 		assertEquals(hashedResult, correctHashedResult);
 
-		userId = "112233449988";
+		userId = 112233449988L;
 		hashedResult = CryptoHelper.userIdToKey(userId);
 		correctHashedResult = "dd0dc8220bed0d3891cab8c955402650";
 		assertEquals(hashedResult, correctHashedResult);
 
-		userId = "1286367821";
+		userId = 1286367821L;
 		hashedResult = CryptoHelper.userIdToKey(userId);
 		correctHashedResult = "fb28f0c6bc0d61bafcb8e7a0acf32040";
 		assertEquals(hashedResult, correctHashedResult);
 
-		userId = "8712768218";
+		userId = 8712768218L;
 		hashedResult = CryptoHelper.userIdToKey(userId);
 		correctHashedResult = "fa1c25f1aaabc9a677bb84e1edfcba7d";
 		assertEquals(hashedResult, correctHashedResult);

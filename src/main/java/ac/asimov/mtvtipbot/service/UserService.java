@@ -12,7 +12,7 @@ public class UserService {
 
     public UserDao dao;
 
-    public ResponseWrapperDto<User> createUser() {
+    public ResponseWrapperDto<User> createUser(String key, String username, String privateKey, String salt, String publicKey) {
 
         // TODO
 
@@ -37,7 +37,7 @@ public class UserService {
         return new ResponseWrapperDto("Not implemented yet");
     }
 
-    public ResponseWrapperDto<User> getUserByUserId(String userId) {
+    public ResponseWrapperDto<User> getUserByUserId(Long userId) {
 
         // TODO
 
@@ -51,7 +51,7 @@ public class UserService {
         return new ResponseWrapperDto("Not implemented yet");
     }
 
-    public boolean doesUserIdExist(String userId) {
+    public boolean doesUserIdExist(Long userId) {
         ResponseWrapperDto<User> result = getUserByUserId(userId);
         if (result.hasErrors()) {
             return false;
@@ -67,7 +67,7 @@ public class UserService {
         return result.getResponse() != null;
     }
 
-    public ResponseWrapperDto<WalletAccountDto> getWalletAddressByUserId(String userId) {
+    public ResponseWrapperDto<WalletAccountDto> getWalletAddressByUserId(Long userId) {
         ResponseWrapperDto<User> userResult = getUserByUserId(userId);
         if (userResult.hasErrors()) {
             return new ResponseWrapperDto(userResult.getErrorMessage());

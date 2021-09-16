@@ -33,12 +33,49 @@ public class HelpCommand implements IBotCommand {
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] strings) {
         try {
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("General commands:\n");
+            sb.append("\n");
+            sb.append("/help - Show this help\n");
+            sb.append("\n");
+            sb.append("/donate [amount] - Donate given amount to the dev wallet\n");
+            sb.append("\n");
+            sb.append("/info - Get more information about this tip bot\n");
+            sb.append("\n");
+            sb.append("/faucet - nClaim some free MTV from the Asimov faucet\n");
+            sb.append("\n");
+            sb.append("/mtvtip [amount] - Send given amount of MTV to replied user\n");
+            sb.append("\n");
+            sb.append("/send [user] [amount] - Send given amount of MTV to the given user\n");
+            sb.append("\n");
+            sb.append("/send [user] [wallet] - Send given amount of MTV to the given wallet address\n");
+            sb.append("\n");
+            sb.append("\n");
+            sb.append("Private Chat commands:\n");
+            sb.append("\n");
+            sb.append("/register - Setup a wallet for your Telegram account\n");
+            sb.append("\n");
+            sb.append("/balance - Show your account (wallet) balance\n");
+            sb.append("\n");
+            sb.append("/account - Show your account (wallet) address\n");
+            sb.append("\n");
+            sb.append("/withdraw [address] - Withdraw all your MTV to your given wallet\n");
+            sb.append("\n");
+            sb.append("/withdraw [address] [amount] - Withdraw given amount of MTV to your given wallet\n");
+
+
+            String messageString = sb.toString();
+            messageString = MessageFormatHelper.appendDisclaimer(messageString, true);
+
+
+
             SendMessage helpMessage = new SendMessage();
             helpMessage.setChatId(message.getChatId().toString());
             helpMessage.setReplyToMessageId(message.getMessageId());
             helpMessage.enableMarkdownV2(true);
-            String escaped = MessageFormatHelper.escapeString("^[](){}´`+*#'.:?,;!s Bot-_.Test1/23: " + getCommandIdentifier());
-            helpMessage.setText(escaped);
+
+            helpMessage.setText(messageString);
             absSender.execute(helpMessage);
         } catch (TelegramApiException e) {
             e.printStackTrace();

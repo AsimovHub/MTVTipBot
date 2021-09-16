@@ -1,12 +1,11 @@
 package ac.asimov.mtvtipbot.helper;
 
-import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 
 public class MessageFormatHelper {
 
-    public final static String DISCLAIMER = "\n\nThis bot is maintained by https://asimov.ac, and the MultiVAC team is not responsible.\n"
-            + "Please keep in mind your tipbot wallet is not safe enough to hold large amounts of funds.\nDo not deposit money you cannot afford to lose on it.";
+    public final static String DISCLAIMER = "\n\nThis bot is developed and maintained by https://asimov.ac and not associated with the official MultiVAC\n"
+            + "Please notice your tipbot wallet is not as secure as your private wallet and you should not hold large amounts of funds in it.";
 
     public static String escapeString(String s) {
         if (StringUtils.isBlank(s)) {
