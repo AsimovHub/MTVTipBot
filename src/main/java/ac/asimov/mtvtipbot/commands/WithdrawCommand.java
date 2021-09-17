@@ -58,47 +58,24 @@ public class WithdrawCommand implements IBotCommand {
 
         String messageString;
 
-        if (strings.length == 0) {
-            // Invalid usage
-            messageString = "Invalid usage! Please use /withdraw [wallet] or /withdraw [wallet] [amount]";
-        } else if (strings.length == 1) {
-            // Withdraw complete
-            String walletString = strings[0];
-            if (blockchainGateway.isWalletValid(new WalletAccountDto(null, walletString))) {
-                ResponseWrapperDto<WalletAccountDto> fullWalletResponse = userService.getFullWalletAccountByUserId(message.getFrom().getId());
-                if (!fullWalletResponse.hasErrors()) {
-                    WalletAccountDto senderWallet = new WalletAccountDto(fullWalletResponse.getResponse().getPrivateKey(), fullWalletResponse.getResponse().getReceiverAddress());
-                    WalletAccountDto receiverWallet = new WalletAccountDto(null, walletString);
-                    ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendCompleteFunds(new TransferRequestDto(senderWallet, receiverWallet));
-                    if (sendResponse.hasErrors() || sendResponse.getResponse() == null || StringUtils.isBlank(sendResponse.getResponse().getTransactionHash())) {
-                        messageString = "An error occurred during transaction. Please try again later and notify developer, when this problem remains";
-                    } else {
-                        String transactionHash = sendResponse.getResponse().getTransactionHash();
-                        messageString = "You successfully sent all your $MTV to your wallet.\nThis is the transaction hash:\n[" + transactionHash + "](https://e.mtv.ac/transaction.html?hash=" + transactionHash + ")";
-                    }
-                } else {
-                    logger.error(fullWalletResponse.getErrorMessage());
-                    messageString = "Cannot withdraw funds. Some error happend while loading your data";
-                }
-            } else {
-                messageString = "Invalid address!";
-            }
-        } else if (strings.length == 2) {
-            // Withdraw given amount
-            try {
+        if (message.getChat().isUserChat()) {
+            if (strings.length == 0) {
+                // Invalid usage
+                messageString = "Invalid usage! Please use /withdraw [wallet] or /withdraw [wallet] [amount]";
+            } else if (strings.length == 1) {
+                // Withdraw complete
                 String walletString = strings[0];
-                BigDecimal amount = new BigDecimal(strings[1]);
                 if (blockchainGateway.isWalletValid(new WalletAccountDto(null, walletString))) {
                     ResponseWrapperDto<WalletAccountDto> fullWalletResponse = userService.getFullWalletAccountByUserId(message.getFrom().getId());
                     if (!fullWalletResponse.hasErrors()) {
                         WalletAccountDto senderWallet = new WalletAccountDto(fullWalletResponse.getResponse().getPrivateKey(), fullWalletResponse.getResponse().getReceiverAddress());
                         WalletAccountDto receiverWallet = new WalletAccountDto(null, walletString);
-                        ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendCompleteFunds(new TransferRequestDto(senderWallet, receiverWallet, amount));
+                        ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendCompleteFunds(new TransferRequestDto(senderWallet, receiverWallet));
                         if (sendResponse.hasErrors() || sendResponse.getResponse() == null || StringUtils.isBlank(sendResponse.getResponse().getTransactionHash())) {
                             messageString = "An error occurred during transaction. Please try again later and notify developer, when this problem remains";
                         } else {
                             String transactionHash = sendResponse.getResponse().getTransactionHash();
-                            messageString = "You successfully sent " + amount + " $MTV to your wallet.\nThis is the transaction hash:\n[" + transactionHash + "](https://e.mtv.ac/transaction.html?hash=" + transactionHash + ")";
+                            messageString = "You successfully sent all your $MTV to your wallet.\nThis is the transaction hash:\n[" + transactionHash + "](https://e.mtv.ac/transaction.html?hash=" + transactionHash + ")";
                         }
                     } else {
                         logger.error(fullWalletResponse.getErrorMessage());
@@ -107,16 +84,42 @@ public class WithdrawCommand implements IBotCommand {
                 } else {
                     messageString = "Invalid address!";
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                messageString = "Invalid amount!";
+            } else if (strings.length == 2) {
+                // Withdraw given amount
+                try {
+                    String walletString = strings[0];
+                    BigDecimal amount = new BigDecimal(strings[1]);
+                    if (blockchainGateway.isWalletValid(new WalletAccountDto(null, walletString))) {
+                        ResponseWrapperDto<WalletAccountDto> fullWalletResponse = userService.getFullWalletAccountByUserId(message.getFrom().getId());
+                        if (!fullWalletResponse.hasErrors()) {
+                            WalletAccountDto senderWallet = new WalletAccountDto(fullWalletResponse.getResponse().getPrivateKey(), fullWalletResponse.getResponse().getReceiverAddress());
+                            WalletAccountDto receiverWallet = new WalletAccountDto(null, walletString);
+                            ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendCompleteFunds(new TransferRequestDto(senderWallet, receiverWallet, amount));
+                            if (sendResponse.hasErrors() || sendResponse.getResponse() == null || StringUtils.isBlank(sendResponse.getResponse().getTransactionHash())) {
+                                messageString = "An error occurred during transaction. Please try again later and notify developer, when this problem remains";
+                            } else {
+                                String transactionHash = sendResponse.getResponse().getTransactionHash();
+                                messageString = "You successfully sent " + amount + " $MTV to your wallet.\nThis is the transaction hash:\n[" + transactionHash + "](https://e.mtv.ac/transaction.html?hash=" + transactionHash + ")";
+                            }
+                        } else {
+                            logger.error(fullWalletResponse.getErrorMessage());
+                            messageString = "Cannot withdraw funds. Some error happend while loading your data";
+                        }
+                    } else {
+                        messageString = "Invalid address!";
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    messageString = "Invalid amount!";
+                }
+            } else {
+                // Invalid usage
+                messageString = "Invalid usage! Please use /withdraw [wallet] or /withdraw [wallet] [amount]";
             }
+            messageObject.setText(MessageFormatHelper.escapeString(messageString));
         } else {
-            // Invalid usage
-            messageString = "Invalid usage! Please use /withdraw [wallet] or /withdraw [wallet] [amount]";
+            messageObject.setText(MessageFormatHelper.escapeString("This command can only be used in private chat. Send me a message!"));
         }
-
-        messageObject.setText(MessageFormatHelper.escapeString(messageString));
 
         try {
             absSender.execute(messageObject);

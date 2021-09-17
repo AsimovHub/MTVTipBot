@@ -56,6 +56,7 @@ public class HelpCommand implements IBotCommand {
             sb.append("/send [user] [wallet] - Send given amount of MTV to the given wallet address\n");
             sb.append("\n");
             sb.append("\n");
+
             sb.append("Private Chat commands:\n");
             sb.append("\n");
             sb.append("/register - Setup a wallet for your Telegram account\n");
