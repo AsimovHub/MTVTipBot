@@ -32,6 +32,9 @@ public class InfoCommand implements IBotCommand {
 
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] strings) {
+        if (message.getFrom().getIsBot()) {
+            return;
+        }
 
         StringBuilder sb = new StringBuilder();
         sb.append("Welcome to the [MultiVAC Tip Bot](https://asimov.ac/tipbot)\n");

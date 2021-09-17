@@ -44,9 +44,13 @@ public class MTVTipBot extends TelegramLongPollingCommandBot {
 
     @Override
     public void processNonCommandUpdate(Update update) {
+        if (!update.getMessage().getFrom().getIsBot()) {
+            Long userId = update.getMessage().getFrom().getId();
+            String username = update.getMessage().getFrom().getUserName();
 
-        // TODO: take a look user exist and username must be changed
+            // TODO: take a look user exist and username must be changed
 
+        }
     }
 
     @Override

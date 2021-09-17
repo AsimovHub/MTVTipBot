@@ -97,8 +97,8 @@ public class UserService {
         return new ResponseWrapperDto(new WalletAccountDto(null, user.getPublicKey()));
     }
 
-    public ResponseWrapperDto<WalletAccountDto> getPrivateKeyByUsername(String username) {
-        ResponseWrapperDto<User> userResult = getUserByUsername(username);
+    public ResponseWrapperDto<WalletAccountDto> getPrivateKeyByUserId(Long userId) {
+        ResponseWrapperDto<User> userResult = getUserByUserId(userId);
         if (userResult.hasErrors()) {
             return new ResponseWrapperDto(userResult.getErrorMessage());
         }
@@ -112,8 +112,8 @@ public class UserService {
         return new ResponseWrapperDto(new WalletAccountDto(null, user.getPublicKey()));
     }
 
-    public ResponseWrapperDto<WalletAccountDto> getFullWalletAccountByUsername(String username) {
-        ResponseWrapperDto<User> userResult = getUserByUsername(username);
+    public ResponseWrapperDto<WalletAccountDto> getFullWalletAccountByUserId(Long userId) {
+        ResponseWrapperDto<User> userResult = getUserByUserId(userId);
         if (userResult.hasErrors()) {
             return new ResponseWrapperDto(userResult.getErrorMessage());
         }

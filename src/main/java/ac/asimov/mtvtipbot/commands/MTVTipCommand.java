@@ -36,6 +36,11 @@ public class MTVTipCommand implements IBotCommand {
 
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] strings) {
+        if (message.getFrom().getIsBot()) {
+            return;
+        }
+
+
 
         // TODO: Validate command syntax
         // TODO: Validate command parameters

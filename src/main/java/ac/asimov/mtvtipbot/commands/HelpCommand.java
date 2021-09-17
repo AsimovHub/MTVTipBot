@@ -32,8 +32,12 @@ public class HelpCommand implements IBotCommand {
 
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] strings) {
-        try {
 
+        if (message.getFrom().getIsBot()) {
+            return;
+        }
+
+        try {
             StringBuilder sb = new StringBuilder();
             sb.append("General commands:\n");
             sb.append("\n");

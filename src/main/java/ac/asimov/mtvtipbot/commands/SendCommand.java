@@ -31,6 +31,13 @@ public class SendCommand implements IBotCommand {
 
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] strings) {
+        if (message.getFrom().getIsBot()) {
+            return;
+        }
+
+        // TODO: Validate command syntax
+        // TODO: Validate command parameters
+
         SendMessage messageObject = new SendMessage();
         messageObject.setChatId(message.getChatId().toString());
         messageObject.setReplyToMessageId(message.getMessageId());

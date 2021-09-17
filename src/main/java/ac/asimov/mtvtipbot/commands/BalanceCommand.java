@@ -53,30 +53,24 @@ public class BalanceCommand implements IBotCommand {
         if (message.getChat().isUserChat()) {
             // DO YOUR STUFF
 
-            try {
-                String messageString;
-                Long userId = absSender.getMe().getId();
-                ResponseWrapperDto<User> userResponse = userService.getUserByUserId(userId);
-                if (userResponse.hasErrors()) {
-                    messageString = "Error during account initialization. Please notify developer";
+            String messageString;
+            Long userId = message.getFrom().getId();
+            ResponseWrapperDto<User> userResponse = userService.getUserByUserId(userId);
+            if (userResponse.hasErrors()) {
+                messageString = "Error during account initialization. Please notify developer";
+            } else {
+                if (userResponse.getResponse() == null) {
+                    messageString = "You do not have an account yet. Please use /register";
                 } else {
-                    if (userResponse.getResponse() == null) {
-                        messageString = "You do not have an account yet. Please use /register";
+                    ResponseWrapperDto<AccountBalanceDto> balanceResponse = blockchainGateway.getAccountBalance(new WalletAccountDto(null, userResponse.getResponse().getPublicKey()));
+                    if (balanceResponse.hasErrors()) {
+                        messageString = "Error while fetching account balance";
                     } else {
-                        ResponseWrapperDto<AccountBalanceDto> balanceResponse = blockchainGateway.getAccountBalance(new WalletAccountDto(null, userResponse.getResponse().getPublicKey()));
-                        if (balanceResponse.hasErrors()) {
-                            messageString = "Error while fetching account balance";
-                        } else {
-                            messageString = "Balance of your Wallet is " + balanceResponse.getResponse().getAmount().toString() + " $MTV";
-                        }
+                        messageString = "Balance of your Wallet is " + balanceResponse.getResponse().getAmount().toString() + " $MTV";
                     }
                 }
-                messageObject.setText(MessageFormatHelper.appendDisclaimer(messageString, true));
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-                messageObject.setText(MessageFormatHelper.escapeString("Cannot determine userdata"));
             }
-
+            messageObject.setText(MessageFormatHelper.appendDisclaimer(messageString, true));
         } else {
             messageObject.setText(MessageFormatHelper.escapeString("This command can only be used in private chat. Send me a message!"));
         }

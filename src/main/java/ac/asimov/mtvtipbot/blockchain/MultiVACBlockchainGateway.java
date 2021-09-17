@@ -86,6 +86,10 @@ public class MultiVACBlockchainGateway {
 
             // Get the transaction hash
             String transactionHash = ethSendTransaction.getTransactionHash();
+
+            // TODO: Create transaction object !!!!
+
+
             return new ResponseWrapperDto(new TransactionResponseDto(transactionHash));
         } catch (Exception e) {
             e.printStackTrace();
@@ -143,6 +147,10 @@ public class MultiVACBlockchainGateway {
 
             // Get the transaction hash
             String transactionHash = ethSendTransaction.getTransactionHash();
+
+
+            // TODO: Create transaction object !!!!
+
             return new ResponseWrapperDto(new TransactionResponseDto(transactionHash));
         } catch (Exception e) {
             e.printStackTrace();

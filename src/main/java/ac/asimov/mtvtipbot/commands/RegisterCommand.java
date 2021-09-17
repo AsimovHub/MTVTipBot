@@ -50,7 +50,9 @@ public class RegisterCommand implements IBotCommand {
 
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] strings) {
-
+        if (message.getFrom().getIsBot()) {
+            return;
+        }
 
         SendMessage messageObject = new SendMessage();
         messageObject.setChatId(message.getChatId().toString());
@@ -59,46 +61,35 @@ public class RegisterCommand implements IBotCommand {
 
 
         if (message.getChat().isUserChat()) {
-            String username = null;
-            try {
-                String messageString;
-                Long userId = absSender.getMe().getId();
+            String messageString;
+            Long userId = message.getFrom().getId();
+            String username = message.getFrom().getUserName();
 
+            if (userService.doesUserIdExist(userId)) {
+                messageObject.setText(MessageFormatHelper.escapeString("You already have an account"));
+            } else {
                 try {
-                    username = absSender.getMe().getUserName();
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
-
-                if (userService.doesUserIdExist(userId)) {
-                    messageObject.setText(MessageFormatHelper.escapeString("You already have an account"));
-                } else {
-                    try {
-                        WalletAccountDto wallet = blockchainGateway.generateNewWallet();
-                        String userKey = CryptoHelper.userIdToKey(userId);
-                        if (!StringUtils.equals("1234", Long.toString(1234L))) {
-                            throw new Exception("Rework id comparison below");
-                        }
-                        EncryptionPairDto encryptedPrivateKey = CryptoHelper.encrypt(wallet.getPrivateKey(), Long.toString(userId));
-
-                        ResponseWrapperDto<User> createUserResponse = userService.createUser(userKey, username, encryptedPrivateKey.getEncryptedValue(), encryptedPrivateKey.getSalt(), wallet.getReceiverAddress());
-                        if (createUserResponse.hasErrors()) {
-                            logger.error(createUserResponse.getErrorMessage());
-                            messageString = "Error during account initialization. Please notify developer";
-                        } else {
-                            messageString = "Success: Here is your private key. Keep it secure.\n"
-                                    + "When you lose it you cannot recover your funds!!! \n\n"
-                                    + wallet.getPrivateKey();
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        messageString = "Cannot create new wallet. Please notify the developer";
+                    WalletAccountDto wallet = blockchainGateway.generateNewWallet();
+                    String userKey = CryptoHelper.userIdToKey(userId);
+                    if (!StringUtils.equals("1234", Long.toString(1234L))) {
+                        throw new Exception("Rework id comparison below");
                     }
-                    messageObject.setText(MessageFormatHelper.appendDisclaimer(messageString, true));
+                    EncryptionPairDto encryptedPrivateKey = CryptoHelper.encrypt(wallet.getPrivateKey(), Long.toString(userId));
+
+                    ResponseWrapperDto<User> createUserResponse = userService.createUser(userKey, username, encryptedPrivateKey.getEncryptedValue(), encryptedPrivateKey.getSalt(), wallet.getReceiverAddress());
+                    if (createUserResponse.hasErrors()) {
+                        logger.error(createUserResponse.getErrorMessage());
+                        messageString = "Error during account initialization. Please notify developer";
+                    } else {
+                        messageString = "Success: Here is your private key. Keep it secure.\n"
+                                + "When you lose it you cannot recover your funds!!! \n\n"
+                                + wallet.getPrivateKey();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    messageString = "Cannot create new wallet. Please notify the developer";
                 }
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-                messageObject.setText(MessageFormatHelper.escapeString("Cannot determine userdata"));
+                messageObject.setText(MessageFormatHelper.appendDisclaimer(messageString, true));
             }
         } else {
             messageObject.setText(MessageFormatHelper.escapeString("This command can only be used in private chat. Send me a message!"));
