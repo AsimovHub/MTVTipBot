@@ -98,8 +98,6 @@ function decrypt(hash, secret, salt) {
 
         cipher.init(Cipher.DECRYPT_MODE, secretKeySpecs, ivSpec);
         byte[] output = cipher.update(Hex.decodeHex(encodedString));
-
-        // String decrypted = Hex.encodeHexString(output);
         String decrypted = bytesToHexString(output);
         return decrypted;
     }
@@ -112,19 +110,6 @@ function decrypt(hash, secret, salt) {
         md.update(userId.toString().getBytes(StandardCharsets.UTF_8));
         byte[] result = md.digest();
         return Hex.encodeHexString(result);
-    }
-
-    private static byte[] unsignedByte(byte[] input) {
-        byte[] output = new byte[input.length];
-
-        for (int i = 0; i < input.length; i++) {
-            byte v = input[i];
-            if (v < 0) {
-                int in = (v & 0xFF);
-            }
-            output[i] = v;
-        }
-        return output;
     }
 
     private static String bytesToHexString(byte[] input) {

@@ -62,7 +62,7 @@ public class MTVSendCommand implements IBotCommand {
             try {
                 WalletAccountDto receiverWallet;
                 if (StringUtils.startsWith(strings[0], "@")) {
-                    ResponseWrapperDto<User> userResponse = userService.getUserByUsername(strings[0].substring(1, strings[0].length()));
+                    ResponseWrapperDto<User> userResponse = userService.getUserByUsername(strings[0].substring(1));
                     if (userResponse.hasErrors()) {
                         throw new TipBotErrorException(userResponse.getErrorMessage());
                     }
@@ -105,14 +105,12 @@ public class MTVSendCommand implements IBotCommand {
                         }
 
                         if (!message.getChat().isUserChat()) {
-                            // TODO: Sent private chat message
-                            SendMessage privateChatMessage = new SendMessage();
-                            privateChatMessage.setChatId(message.getFrom().getId() + "");
-                            privateChatMessage.enableMarkdown(true);
-                            String privateMessageString = "";
-                            // TODO: Add message
-                            privateChatMessage.setText(MessageFormatHelper.escapeStringMarkdownV1(privateMessageString));
                             try {
+                                SendMessage privateChatMessage = new SendMessage();
+                                privateChatMessage.setChatId(message.getFrom().getId() + "");
+                                privateChatMessage.enableMarkdown(true);
+                                String privateMessageString = "You have sent " + amount + " $MTV to " + strings[0] + "\nThis is your transaction hash:\n[" + transferResponse.getResponse().getTransactionHash() + "](https://e.mtv.ac/transaction.html?hash=" + transferResponse.getResponse().getTransactionHash() + ")";
+                                privateChatMessage.setText(MessageFormatHelper.escapeStringMarkdownV1(privateMessageString));
                                 absSender.execute(privateChatMessage);
                             } catch (TelegramApiException e) {
                                 e.printStackTrace();

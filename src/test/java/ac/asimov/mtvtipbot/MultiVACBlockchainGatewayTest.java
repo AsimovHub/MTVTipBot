@@ -1,7 +1,11 @@
 package ac.asimov.mtvtipbot;
 
 import ac.asimov.mtvtipbot.blockchain.MultiVACBlockchainGateway;
+import ac.asimov.mtvtipbot.dtos.EncryptionPairDto;
+import ac.asimov.mtvtipbot.dtos.ResponseWrapperDto;
+import ac.asimov.mtvtipbot.dtos.TransferRequestDto;
 import ac.asimov.mtvtipbot.dtos.WalletAccountDto;
+import ac.asimov.mtvtipbot.helper.CryptoHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +20,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.web3j.crypto.ECKeyPair;
+import org.web3j.crypto.Keys;
 import org.web3j.crypto.WalletUtils;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.math.BigDecimal;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ContextConfiguration(classes = { MTVTipBotApplication.class })
@@ -32,10 +41,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @AutoConfigureDataJpa
 @AutoConfigureTestEntityManager
 @ImportAutoConfiguration
-class MTVTipBotApplicationTests {
-	
+class MultiVACBlockchainGatewayTest {
+
+	@Autowired
+	private MultiVACBlockchainGateway blockchainGateway;
+
 	@Test
-	void contextLoads() {
+	void testWalletCreation() throws Exception {
+		WalletAccountDto wallet = blockchainGateway.generateNewWallet();
+		assertTrue(blockchainGateway.isWalletValid(wallet));
+		assertTrue(WalletUtils.isValidPrivateKey(wallet.getPrivateKey()));
 	}
 
+	// Does not work as it requires a test account with funds
+	// @Test
+	void testGasEstimation() throws Exception {
+		ResponseWrapperDto<BigDecimal> result = blockchainGateway.getEstimatedGas(new TransferRequestDto(blockchainGateway.generateNewWallet(), blockchainGateway.generateNewWallet(), BigDecimal.ZERO));
+		assertFalse(result.hasErrors());
+		assertTrue(result.getResponse().compareTo(BigDecimal.ZERO) > 0);
+	}
 }
