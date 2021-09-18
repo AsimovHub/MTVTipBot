@@ -3,6 +3,6 @@ CREATE TABLE IF NOT EXISTS transactions (
                                 transferred_at DATETIME NOT NULL,
                                 sender_wallet VARCHAR(255) NOT NULL,
                                 receiver_wallet VARCHAR(255) NOT NULL,
-                                amount BIGINT NOT NULL,
+                                amount DECIMAL(19,2) NOT NULL,
                                 PRIMARY KEY(transaction_hash)
 );

@@ -1,11 +1,17 @@
 package ac.asimov.mtvtipbot.bots;
 
 import ac.asimov.mtvtipbot.commands.*;
+import ac.asimov.mtvtipbot.dtos.ResponseWrapperDto;
+import ac.asimov.mtvtipbot.model.User;
+import ac.asimov.mtvtipbot.service.UserService;
+import jdk.dynalink.beans.StaticClass;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -19,22 +25,38 @@ public class MTVTipBot extends TelegramLongPollingCommandBot {
     @Value("${tipbot.token}")
     private String token;
 
-    public MTVTipBot() {
-        logger.info("Creating TipBotCommand");
+    @Autowired
+    private UserService userService;
 
-        register(new StartCommand("start", "Start the bot"));
-        register(new HelpCommand("help", "Show this help"));
-        register(new InfoCommand("info", "Get more information about this tip bot"));
+    @Autowired
+    public MTVTipBot(HelpCommand helpCommand,
+                     InfoCommand infoCommand,
+                     StartCommand startCommand,
+                     RegisterCommand registerCommand,
+                     MTVTipCommand mtvTipCommand,
+                     MTVSendCommand mtvSendCommand,
+                     AccountCommand accountCommand,
+                     BalanceCommand balanceCommand,
+                     WithdrawCommand withdrawCommand,
+                     DonateCommand donateCommand,
+                     FaucetCommand faucetCommand) {
+        logger.info("Creating tipbot commands");
 
+        register(helpCommand);
+        register(infoCommand);
 
-        register(new RegisterCommand("register", "Setup a wallet for your Telegram account"));
-        register(new MTVTipCommand("mtvtip", "Send given tip amount to replied user"));
+        register(startCommand);
+        register(registerCommand);
 
-        register(new AccountCommand("account", "Show your account address"));
-        register(new BalanceCommand("balance", "Show your account balance"));
+        register(mtvTipCommand);
+        register(mtvSendCommand);
 
-        register(new SendCommand("mtvsend", "Send given tip amount to the given user"));
-        register(new WithdrawCommand("withdraw", "Withdraw given amount of MTV to your given wallet"));
+        register(accountCommand);
+        register(balanceCommand);
+        register(withdrawCommand);
+
+        register(donateCommand);
+        register(faucetCommand);
     }
 
     @Override
@@ -48,8 +70,14 @@ public class MTVTipBot extends TelegramLongPollingCommandBot {
             Long userId = update.getMessage().getFrom().getId();
             String username = update.getMessage().getFrom().getUserName();
 
-            // TODO: take a look user exist and username must be changed
+            ResponseWrapperDto<User> userResponse = userService.getUserByUserId(userId);
 
+            if (!userResponse.hasErrors() && userResponse.getResponse() != null) {
+                User user = userResponse.getResponse();
+                if (!StringUtils.equals(username, user.getUsername())) {
+                    userService.updateUsername(user, username);
+                }
+            }
         }
     }
 

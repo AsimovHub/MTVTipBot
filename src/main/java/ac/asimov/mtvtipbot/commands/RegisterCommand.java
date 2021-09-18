@@ -4,6 +4,7 @@ import ac.asimov.mtvtipbot.blockchain.MultiVACBlockchainGateway;
 import ac.asimov.mtvtipbot.dtos.EncryptionPairDto;
 import ac.asimov.mtvtipbot.dtos.ResponseWrapperDto;
 import ac.asimov.mtvtipbot.dtos.WalletAccountDto;
+import ac.asimov.mtvtipbot.exceptions.TipBotErrorException;
 import ac.asimov.mtvtipbot.helper.CryptoHelper;
 import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
 import ac.asimov.mtvtipbot.model.User;
@@ -12,15 +13,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import javax.annotation.meta.When;
-import java.text.MessageFormat;
-
+@Component
 public class RegisterCommand implements IBotCommand {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -30,22 +30,14 @@ public class RegisterCommand implements IBotCommand {
     @Autowired
     private MultiVACBlockchainGateway blockchainGateway;
 
-    private final String commandIdentifier;
-    private final String commandDescription;
-
-    public RegisterCommand(String commandIdentifier, String commandDescription) {
-        this.commandIdentifier = commandIdentifier;
-        this.commandDescription = commandDescription;
-    }
-
     @Override
     public String getCommandIdentifier() {
-        return commandIdentifier;
+        return "register";
     }
 
     @Override
     public String getDescription() {
-        return commandDescription;
+        return "Setup a wallet for your Telegram account";
     }
 
     @Override
@@ -57,48 +49,55 @@ public class RegisterCommand implements IBotCommand {
         SendMessage messageObject = new SendMessage();
         messageObject.setChatId(message.getChatId().toString());
         messageObject.setReplyToMessageId(message.getMessageId());
-        messageObject.enableMarkdownV2(true);
-
-
-        if (message.getChat().isUserChat()) {
-            String messageString;
-            Long userId = message.getFrom().getId();
-            String username = message.getFrom().getUserName();
-
-            if (userService.doesUserIdExist(userId)) {
-                messageObject.setText(MessageFormatHelper.escapeString("You already have an account"));
-            } else {
-                try {
-                    WalletAccountDto wallet = blockchainGateway.generateNewWallet();
-                    String userKey = CryptoHelper.userIdToKey(userId);
-                    if (!StringUtils.equals("1234", Long.toString(1234L))) {
-                        throw new Exception("Rework id comparison below");
-                    }
-                    EncryptionPairDto encryptedPrivateKey = CryptoHelper.encrypt(wallet.getPrivateKey(), Long.toString(userId));
-
-                    ResponseWrapperDto<User> createUserResponse = userService.createUser(userKey, username, encryptedPrivateKey.getEncryptedValue(), encryptedPrivateKey.getSalt(), wallet.getReceiverAddress());
-                    if (createUserResponse.hasErrors()) {
-                        logger.error(createUserResponse.getErrorMessage());
-                        messageString = "Error during account initialization. Please notify developer";
-                    } else {
-                        messageString = "Success: Here is your private key. Keep it secure.\n"
-                                + "When you lose it you cannot recover your funds!!! \n\n"
-                                + wallet.getPrivateKey();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    messageString = "Cannot create new wallet. Please notify the developer";
-                }
-                messageObject.setText(MessageFormatHelper.appendDisclaimer(messageString, true));
-            }
-        } else {
-            messageObject.setText(MessageFormatHelper.escapeString("This command can only be used in private chat. Send me a message!"));
-        }
-
         try {
-            absSender.execute(messageObject);
-        } catch (TelegramApiException e) {
+            if (!message.getChat().isUserChat()) {
+                throw new TipBotErrorException("This command can only be used in private chat. Send me a message!");
+            }
+
+            if (userService.doesUserIdExist(message.getFrom().getId())) {
+                throw new TipBotErrorException("You already have an account");
+            }
+
+            try {
+                WalletAccountDto wallet = blockchainGateway.generateNewWallet();
+                String userKey = CryptoHelper.userIdToKey(message.getFrom().getId());
+                EncryptionPairDto encryptedPrivateKey = CryptoHelper.encrypt(wallet.getPrivateKey(), Long.toString(message.getFrom().getId()));
+
+                ResponseWrapperDto<User> createUserResponse = userService.createUser(
+                        userKey,
+                        message.getFrom().getUserName(),
+                        encryptedPrivateKey.getEncryptedValue(),
+                        encryptedPrivateKey.getSalt(),
+                        wallet.getReceiverAddress());
+                if (createUserResponse.hasErrors()) {
+                    logger.error(createUserResponse.getErrorMessage());
+                    throw new TipBotErrorException("Error during account loading. Please notify developer");
+                } else {
+                    String messageString = "Success: Here is your private key. Keep it secure.\n"
+                            + "When you lose it you cannot recover your funds!!! \n\n"
+                            + wallet.getPrivateKey();
+                    messageObject.enableMarkdown(true);
+                    messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV1(messageString, true));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new TipBotErrorException("Cannot create new wallet. Please notify the developer");
+            }
+            try {
+                absSender.execute(messageObject);
+            } catch (TelegramApiException e) {
+                e.printStackTrace();
+                throw new TipBotErrorException("Server error");
+            }
+        } catch (TipBotErrorException e) {
             e.printStackTrace();
+            messageObject.enableMarkdownV2(true);
+            messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV2(e.getMessage(), true));
+            try {
+                absSender.execute(messageObject);
+            } catch (TelegramApiException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 }

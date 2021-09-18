@@ -4,28 +4,24 @@ import ac.asimov.mtvtipbot.blockchain.MultiVACBlockchainGateway;
 import ac.asimov.mtvtipbot.dtos.*;
 import ac.asimov.mtvtipbot.exceptions.TipBotErrorException;
 import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
+import ac.asimov.mtvtipbot.model.User;
 import ac.asimov.mtvtipbot.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand;
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.IBotCommand;
-import org.telegram.telegrambots.extensions.bots.commandbot.commands.ICommandRegistry;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Message;
-import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.math.BigDecimal;
 
 @Component
-public class MTVTipCommand implements IBotCommand {
+public class MTVSendCommand implements IBotCommand {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
 
     @Autowired
     private UserService userService;
@@ -33,17 +29,17 @@ public class MTVTipCommand implements IBotCommand {
     @Autowired
     private MultiVACBlockchainGateway blockchainGateway;
 
-    public MTVTipCommand() {
+    public MTVSendCommand() {
     }
 
     @Override
     public String getCommandIdentifier() {
-        return "mtvtip";
+        return "mtvsend";
     }
 
     @Override
     public String getDescription() {
-        return "Send given tip amount to replied user";
+        return "Send MTV to the given user";
     }
 
     @Override
@@ -57,36 +53,35 @@ public class MTVTipCommand implements IBotCommand {
         messageObject.setReplyToMessageId(message.getMessageId());
 
         try {
-            if (message.getChat().isUserChat()) {
-                throw new TipBotErrorException("This command can only be used in public chats (since you need to reply to another user).");
-            }
 
-            if (strings.length != 1) {
-                throw new TipBotErrorException("Invalid usage! Please reply /mtvtip [amount] to a sent message");
-            }
-
-            if (!message.isReply()) {
-                throw new TipBotErrorException("This command can only be used as reply to another message");
-            }
-
-            if (message.getReplyToMessage().getFrom().getIsBot()) {
-                throw new TipBotErrorException("You can send no MTV to bots");
+            if (strings.length != 2) {
+                throw new TipBotErrorException("Invalid usage! Please reply /mtvsend [@user] [amount] or /mtvsend [wallet] [amount]");
             }
 
             // Withdraw given amount
             try {
-                BigDecimal amount = new BigDecimal(strings[0]);
+                WalletAccountDto receiverWallet;
+                if (StringUtils.startsWith(strings[0], "@")) {
+                    ResponseWrapperDto<User> userResponse = userService.getUserByUsername(strings[0].substring(1, strings[0].length()));
+                    if (userResponse.hasErrors()) {
+                        throw new TipBotErrorException(userResponse.getErrorMessage());
+                    }
+                    if (userResponse.getResponse() != null) {
+                        receiverWallet = new WalletAccountDto(null, userResponse.getResponse().getPublicKey());
+                    } else {
+                        throw new TipBotErrorException("User does not have tipbot account");
+                    }
+                } else if (blockchainGateway.isWalletValid(new WalletAccountDto(null, strings[0]))) {
+                    receiverWallet = new WalletAccountDto(null, strings[0]);
+                } else {
+                    throw new TipBotErrorException("You must mention a user or use a valid wallet address (this starts with 0x)\n/mtvsend [user/wallet] [amount]");
+                }
+
+                BigDecimal amount = new BigDecimal(strings[1]);
                 Long senderUserId =  message.getFrom().getId();
-                Long receiverUserId = message.getReplyToMessage().getFrom().getId();
 
                 if (!userService.doesUserIdExist(senderUserId)) {
                     throw new TipBotErrorException("You do not have an account yet.\nOpen up private chat to create an account.");
-                }
-
-                ResponseWrapperDto<WalletAccountDto> receiverWalletResponse = userService.getWalletAddressByUserId(receiverUserId);
-
-                if (receiverWalletResponse.hasErrors()) {
-                    throw new TipBotErrorException(receiverWalletResponse.getErrorMessage());
                 }
 
                 ResponseWrapperDto<WalletAccountDto> senderWalletResponse = userService.getFullWalletAccountByUserId(senderUserId);
@@ -95,7 +90,7 @@ public class MTVTipCommand implements IBotCommand {
                 }
 
                 try {
-                    ResponseWrapperDto<TransactionResponseDto> transferResponse = blockchainGateway.sendFunds(new TransferRequestDto(senderWalletResponse.getResponse(), receiverWalletResponse.getResponse(), amount));
+                    ResponseWrapperDto<TransactionResponseDto> transferResponse = blockchainGateway.sendFunds(new TransferRequestDto(senderWalletResponse.getResponse(), receiverWallet, amount));
                     if (transferResponse.hasErrors()) {
                         throw new TipBotErrorException("Cannot transfer funds");
                     } else {
@@ -109,18 +104,19 @@ public class MTVTipCommand implements IBotCommand {
                             throw new TipBotErrorException("Server error");
                         }
 
-
-                        // TODO: Sent private chat message
-                        SendMessage privateChatMessage = new SendMessage();
-                        privateChatMessage.setChatId(message.getFrom().getId() + "");
-                        privateChatMessage.enableMarkdown(true);
-                        String privateMessageString = "";
-                        // TODO: Add message
-                        privateChatMessage.setText(MessageFormatHelper.escapeStringMarkdownV1(privateMessageString));
-                        try {
-                            absSender.execute(privateChatMessage);
-                        } catch (TelegramApiException e) {
-                            e.printStackTrace();
+                        if (!message.getChat().isUserChat()) {
+                            // TODO: Sent private chat message
+                            SendMessage privateChatMessage = new SendMessage();
+                            privateChatMessage.setChatId(message.getFrom().getId() + "");
+                            privateChatMessage.enableMarkdown(true);
+                            String privateMessageString = "";
+                            // TODO: Add message
+                            privateChatMessage.setText(MessageFormatHelper.escapeStringMarkdownV1(privateMessageString));
+                            try {
+                                absSender.execute(privateChatMessage);
+                            } catch (TelegramApiException e) {
+                                e.printStackTrace();
+                            }
                         }
 
                     }

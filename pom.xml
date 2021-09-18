@@ -14,7 +14,7 @@
 	<name>mtvtipbot</name>
 	<description>A telegram tip bot using MultiVAC&apos;s native currency MTV</description>
 	<properties>
-		<java.version>11</java.version>
+		<java.version>14</java.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -56,11 +56,6 @@
 			<artifactId>commons-lang3</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.web3j</groupId>
-			<artifactId>core</artifactId>
-			<version>5.0.0</version>
-		</dependency>
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.13.2</version>
@@ -71,7 +66,6 @@
 			<artifactId>telegrambots-spring-boot-starter</artifactId>
 			<version>5.3.0</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.telegram</groupId>
 			<artifactId>telegrambotsextensions</artifactId>
@@ -81,6 +75,16 @@
 			<groupId>org.web3j</groupId>
 			<artifactId>core</artifactId>
 			<version>5.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.squareup.okhttp3</groupId>
+			<artifactId>okhttp</artifactId>
+			<version>4.9.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.xerial</groupId>
+			<artifactId>sqlite-jdbc</artifactId>
+			<version>3.36.0.2</version>
 		</dependency>
 	</dependencies>
 
