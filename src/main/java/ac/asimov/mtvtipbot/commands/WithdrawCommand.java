@@ -118,7 +118,7 @@ public class WithdrawCommand implements IBotCommand {
             }
 
             messageObject.enableMarkdown(true);
-            messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV1(messageString, true));
+            messageObject.setText(MessageFormatHelper.escapeStringMarkdownV1(messageString));
             try {
                 absSender.execute(messageObject);
             } catch (TelegramApiException e) {
@@ -128,7 +128,7 @@ public class WithdrawCommand implements IBotCommand {
         } catch (TipBotErrorException e) {
             e.printStackTrace();
             messageObject.enableMarkdownV2(true);
-            messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV2(e.getMessage(), true));
+            messageObject.setText(MessageFormatHelper.escapeStringMarkdownV2(e.getMessage()));
             try {
                 absSender.execute(messageObject);
             } catch (TelegramApiException e1) {

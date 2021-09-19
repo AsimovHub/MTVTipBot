@@ -79,7 +79,7 @@ public class RegisterCommand implements IBotCommand {
                             + "This bot is developed and maintained by https://asimov.ac and not associated with the official MultiVAC.\n"
                             + "Please notice your tipbot wallet is not as secure as your private wallet and you should not hold large amounts of funds in it.";
                     messageObject.enableMarkdown(true);
-                    messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV1(messageString, true));
+                    messageObject.setText(MessageFormatHelper.escapeStringMarkdownV1(messageString));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
