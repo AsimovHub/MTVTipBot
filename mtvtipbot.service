@@ -1,0 +1,11 @@
+[Unit]
+Description=mtvtipbot
+After=syslog.target
+
+[Service]
+User=isaac
+ExecStart=java -jar /home/isaac/mtvtipbot/mtvtipbot.jar
+SuccessExitStatus=143
+
+[Install]
+WantedBy=multi-user.target

@@ -33,12 +33,12 @@ public class FaucetCommand implements IBotCommand {
         StringBuilder sb = new StringBuilder();
         sb.append("Hi there, faucet claiming directly in Telegram is not supported yet but you can get your address with /account, open up the faucet by clicking [this link](https://asimov.ac/faucet) and enter your address");
 
-        String messageString = MessageFormatHelper.escapeStringMarkdownV2(sb.toString());
+        String messageString = MessageFormatHelper.escapeStringMarkdownV1(sb.toString());
 
         SendMessage messageObject = new SendMessage();
         messageObject.setChatId(message.getChatId().toString());
         messageObject.setReplyToMessageId(message.getMessageId());
-        messageObject.enableMarkdownV2(true);
+        messageObject.enableMarkdown(true);
         messageObject.setText(messageString);
 
         try {

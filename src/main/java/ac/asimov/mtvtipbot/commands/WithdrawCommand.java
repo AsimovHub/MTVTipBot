@@ -86,6 +86,9 @@ public class WithdrawCommand implements IBotCommand {
                 // Withdraw given amount
                 try {
                     String walletString = strings[0];
+                    if (StringUtils.startsWith(strings[1], ".")) {
+                        strings[1] = "0" + strings[1];
+                    }
                     BigDecimal amount = new BigDecimal(strings[1]);
                     if (blockchainGateway.isWalletValid(new WalletAccountDto(null, walletString))) {
                         ResponseWrapperDto<WalletAccountDto> fullWalletResponse = userService.getFullWalletAccountByUserId(message.getFrom().getId());

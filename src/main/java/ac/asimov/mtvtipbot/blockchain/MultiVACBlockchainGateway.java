@@ -97,7 +97,6 @@ public class MultiVACBlockchainGateway {
             // Get the transaction hash
             String transactionHash = ethSendTransaction.getTransactionHash();
 
-
             transactionService.createTransaction(request, transactionHash);
 
             return new ResponseWrapperDto<>(new TransactionResponseDto(transactionHash));
@@ -133,7 +132,7 @@ public class MultiVACBlockchainGateway {
                     gasPrice,
                     gasLimit,
                     request.getReceiver().getReceiverAddress(),
-                    Convert.toWei(sentAmount, Convert.Unit.GWEI).toBigInteger());
+                    Convert.toWei(sentAmount, Convert.Unit.ETHER).toBigInteger());
 
             byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, Integer.parseInt(chainId), credentials);
 
@@ -172,7 +171,7 @@ public class MultiVACBlockchainGateway {
                     gasPrice,
                     gasLimit,
                     request.getReceiver().getReceiverAddress(),
-                    Convert.toWei(request.getAmount() != null ? request.getAmount().toString() : "1", Convert.Unit.ETHER).toBigInteger());EthEstimateGas result = web3.ethEstimateGas(estTransaction).send();
+                    Convert.toWei(request.getAmount() != null ? request.getAmount().toString() : "0.1", Convert.Unit.ETHER).toBigInteger());EthEstimateGas result = web3.ethEstimateGas(estTransaction).send();
 
             if (result.hasError()) {
                 if (StringUtils.isBlank(result.getError().getMessage())) {
@@ -181,9 +180,8 @@ public class MultiVACBlockchainGateway {
                     return new ResponseWrapperDto<>(result.getError().getMessage());
                 }
             }
-
             BigInteger gasFee = result.getAmountUsed();
-            BigDecimal gasInEther = Convert.fromWei(gasFee.toString(), Convert.Unit.ETHER);
+            BigDecimal gasInEther = Convert.fromWei(Convert.toWei(gasFee.toString(), Convert.Unit.GWEI), Convert.Unit.ETHER);
             return new ResponseWrapperDto<>(gasInEther);
         } catch (Exception e) {
             e.printStackTrace();

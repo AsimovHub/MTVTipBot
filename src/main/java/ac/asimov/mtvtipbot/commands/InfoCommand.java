@@ -37,7 +37,7 @@ public class InfoCommand implements IBotCommand {
         StringBuilder sb = new StringBuilder();
         sb.append("Welcome to the [MultiVAC Tip Bot](https://asimov.ac/tipbot)\n");
                 sb.append("This is brought to you by n-three as one of the first projects using the MultiVAC blockchain and is not associated with the official MultiVAC team.\n");
-                sb.append("You can find all of my projects around the MultiVAC blockchain on the [Asimov Hub](https://asimov.ac)");
+                sb.append("You can find all of my projects around the MultiVAC blockchain on the [Asimov Hub](https://asimov.ac).");
                 sb.append("\n");
                 sb.append("Please notice your tipbot wallet is not as secure as your private wallet and you should not hold large amounts of funds in it.");
 

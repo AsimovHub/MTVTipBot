@@ -77,6 +77,9 @@ public class MTVSendCommand implements IBotCommand {
                     throw new TipBotErrorException("You must mention a user or use a valid wallet address (this starts with 0x)\n/mtvsend [user/wallet] [amount]");
                 }
 
+                if (StringUtils.startsWith(strings[1], ".")) {
+                    strings[1] = "0" + strings[1];
+                }
                 BigDecimal amount = new BigDecimal(strings[1]);
                 Long senderUserId =  message.getFrom().getId();
 
@@ -94,7 +97,7 @@ public class MTVSendCommand implements IBotCommand {
                     if (transferResponse.hasErrors()) {
                         throw new TipBotErrorException("Cannot transfer funds");
                     } else {
-                        String messageString = "You successfully sent all your $MTV to your wallet.\nThis is the transaction hash:\n[" + transferResponse.getResponse().getTransactionHash() + "](https://e.mtv.ac/transaction.html?hash=" + transferResponse.getResponse().getTransactionHash() + ")";
+                        String messageString = "You successfully sent " + amount + " $MTV to " + strings[0];
                         messageObject.enableMarkdown(true);
                         messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV1(messageString, true));
                         try {

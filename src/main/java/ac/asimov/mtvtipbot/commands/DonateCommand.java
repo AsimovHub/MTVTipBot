@@ -47,10 +47,10 @@ public class DonateCommand implements IBotCommand {
 
     @Override
     public void processMessage(AbsSender absSender, Message message, String[] strings) {
-
         SendMessage messageObject = new SendMessage();
         messageObject.setChatId(message.getChatId().toString());
         messageObject.setReplyToMessageId(message.getMessageId());
+
         try {
             if (strings.length != 1) {
                 throw new TipBotErrorException("Invalid usage! Please use /donate [amount]");
@@ -58,20 +58,26 @@ public class DonateCommand implements IBotCommand {
 
             BigDecimal amount = null;
             try {
+                if (StringUtils.startsWith(strings[0], ".")) {
+                    strings[0] = "0" + strings[0];
+                }
                 amount = new BigDecimal(strings[0]);
             } catch (NumberFormatException e) {
                 e.printStackTrace();
                 throw new TipBotErrorException("Invalid amount!");
             }
-            ResponseWrapperDto<WalletAccountDto> fullWalletResponse = userService.getFullWalletAccountByUserId(message.getFrom().getId());
 
+            ResponseWrapperDto<WalletAccountDto> fullWalletResponse = userService.getFullWalletAccountByUserId(message.getFrom().getId());
             if (fullWalletResponse.hasErrors()) {
                 logger.error(fullWalletResponse.getErrorMessage());
                 throw new TipBotErrorException("Cannot send funds. Some error happened while loading your data");
             }
+
             WalletAccountDto senderWallet = new WalletAccountDto(fullWalletResponse.getResponse().getPrivateKey(), fullWalletResponse.getResponse().getReceiverAddress());
             WalletAccountDto receiverWallet = new WalletAccountDto(null, developerWallet);
+
             ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendFunds(new TransferRequestDto(senderWallet, receiverWallet, amount));
+
             if (sendResponse.hasErrors() || sendResponse.getResponse() == null || StringUtils.isBlank(sendResponse.getResponse().getTransactionHash())) {
                 throw new TipBotErrorException(sendResponse.getErrorMessage());
             } else {
@@ -79,6 +85,7 @@ public class DonateCommand implements IBotCommand {
                 String messageString = "Thank you very much! <3";
                 messageObject.enableMarkdown(true);
                 messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV1(messageString, true));
+
                 try {
                     absSender.execute(messageObject);
                 } catch (TelegramApiException e) {

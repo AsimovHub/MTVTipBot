@@ -75,6 +75,9 @@ public class MTVTipCommand implements IBotCommand {
 
             // Withdraw given amount
             try {
+                if (StringUtils.startsWith(strings[0], ".")) {
+                    strings[0] = "0" + strings[0];
+                }
                 BigDecimal amount = new BigDecimal(strings[0]);
                 Long senderUserId =  message.getFrom().getId();
                 Long receiverUserId = message.getReplyToMessage().getFrom().getId();

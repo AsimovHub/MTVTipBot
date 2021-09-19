@@ -4,6 +4,8 @@ import ac.asimov.mtvtipbot.dao.TransactionDao;
 import ac.asimov.mtvtipbot.dao.UserDao;
 import ac.asimov.mtvtipbot.model.Transaction;
 import ac.asimov.mtvtipbot.model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -15,6 +17,9 @@ import java.sql.*;
 
 @Service
 public class MigrationService {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     @Autowired
     private UserDao userDao;
 
@@ -23,23 +28,17 @@ public class MigrationService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void migrateUsers() {
+        logger.info("Scanning for database to migrate users");
         Connection conn = null;
         try {
-            File file = new File(getClass().getClassLoader().getResource("database/database.db").getFile());
+            File file = new File("database/database.db");
+            if (!file.exists()) {
+                logger.info("No database for user migration found");
+                return;
+            }
+            logger.info("Database for user migration found");
             conn = DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
-
-
-
             String sql = "SELECT userId, username, publicKey, privateKey, salt, createdAt FROM users";
-
-            /*
-            user_key	VARCHAR(255) NOT NULL,
-                         username VARCHAR(255) NOT NULL,
-                         public_key VARCHAR(255) NOT NULL,
-                         private_key VARCHAR(255) NOT NULL,
-                         created_at DATETIME NOT NULL,
-                         salt VARCHAR(255) NOT NULL,
-             */
 
              Statement stmt  = conn.createStatement();
              ResultSet rs    = stmt.executeQuery(sql);
@@ -68,7 +67,7 @@ public class MigrationService {
                     e.printStackTrace();
                 }
             }
-
+            logger.info("User database successfully migrated");
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -84,21 +83,18 @@ public class MigrationService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void migrateTransactions() {
+        logger.info("Scanning for database to migrate transaction");
         Connection conn = null;
         try {
-            File file = new File(getClass().getClassLoader().getResource("database/database.db").getFile());
+            File file = new File("database/database.db");
+            if (!file.exists()) {
+                logger.info("No database for user migration found");
+                return;
+            }
+            logger.info("Database for user migration found");
+
             conn = DriverManager.getConnection("jdbc:sqlite:" + file.getAbsolutePath());
-
             String sql = "SELECT transactionHash, transferredAt, senderWallet, receiverWallet, amount FROM transactions";
-
-            /*
-            user_key	VARCHAR(255) NOT NULL,
-                         username VARCHAR(255) NOT NULL,
-                         public_key VARCHAR(255) NOT NULL,
-                         private_key VARCHAR(255) NOT NULL,
-                         created_at DATETIME NOT NULL,
-                         salt VARCHAR(255) NOT NULL,
-             */
 
             Statement stmt  = conn.createStatement();
             ResultSet rs    = stmt.executeQuery(sql);
@@ -121,6 +117,7 @@ public class MigrationService {
                 transaction.setTransferredAt(timestamp.toLocalDateTime());
                 transactionDao.save(transaction);
             }
+            logger.info("Transaction database successfully migrated");
 
         } catch (SQLException e) {
             e.printStackTrace();

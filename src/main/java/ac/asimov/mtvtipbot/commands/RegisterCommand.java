@@ -73,9 +73,11 @@ public class RegisterCommand implements IBotCommand {
                     logger.error(createUserResponse.getErrorMessage());
                     throw new TipBotErrorException("Error during account loading. Please notify developer");
                 } else {
-                    String messageString = "Success: Here is your private key. Keep it secure.\n"
-                            + "When you lose it you cannot recover your funds!!! \n\n"
-                            + wallet.getPrivateKey();
+                    String messageString = "Success: Here is your private key: \n\n"
+                            + wallet.getPrivateKey() + "\n\n"
+                            + "Keep it secure. When you lose it you cannot recover your funds!!!\n"
+                            + "This bot is developed and maintained by https://asimov.ac and not associated with the official MultiVAC.\n"
+                            + "Please notice your tipbot wallet is not as secure as your private wallet and you should not hold large amounts of funds in it.";
                     messageObject.enableMarkdown(true);
                     messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV1(messageString, true));
                 }

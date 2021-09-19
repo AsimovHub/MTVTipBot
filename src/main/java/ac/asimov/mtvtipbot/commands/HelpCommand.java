@@ -34,7 +34,6 @@ public class HelpCommand implements IBotCommand {
         try {
             StringBuilder sb = new StringBuilder();
             sb.append("General commands:\n");
-            sb.append("\n");
             sb.append("/help - Show this help\n");
             sb.append("/info - Get more information about this tip bot\n");
             sb.append("/faucet - Claim some free MTV from the Asimov faucet\n");
@@ -45,7 +44,6 @@ public class HelpCommand implements IBotCommand {
             sb.append("\n");
 
             sb.append("Private Chat commands:\n");
-            sb.append("\n");
             sb.append("/register - Setup a wallet for your Telegram account\n");
             sb.append("/balance - Show your account (wallet) balance\n");
             sb.append("/account - Show your account (wallet) address\n");

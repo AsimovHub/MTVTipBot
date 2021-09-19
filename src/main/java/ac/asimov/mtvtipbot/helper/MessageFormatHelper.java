@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class MessageFormatHelper {
 
-    public final static String DISCLAIMER = "\n\nThis bot is developed and maintained by https://asimov.ac and not associated with the official MultiVAC\n"
+    public final static String DISCLAIMER = "\n\nThis bot is developed and maintained by https://asimov.ac and not associated with the official MultiVAC.\n"
             + "Please notice your tipbot wallet is not as secure as your private wallet and you should not hold large amounts of funds in it.";
 
     public static String escapeStringMarkdownV1(String s) {
