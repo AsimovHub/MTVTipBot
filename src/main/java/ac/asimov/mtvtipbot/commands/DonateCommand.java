@@ -70,7 +70,7 @@ public class DonateCommand implements IBotCommand {
             ResponseWrapperDto<WalletAccountDto> fullWalletResponse = userService.getFullWalletAccountByUserId(message.getFrom().getId());
             if (fullWalletResponse.hasErrors()) {
                 logger.error(fullWalletResponse.getErrorMessage());
-                throw new TipBotErrorException("Cannot send funds. Some error happened while loading your data");
+                throw new TipBotErrorException(fullWalletResponse.getErrorMessage());
             }
 
             WalletAccountDto senderWallet = new WalletAccountDto(fullWalletResponse.getResponse().getPrivateKey(), fullWalletResponse.getResponse().getReceiverAddress());

@@ -69,7 +69,7 @@ public class MTVSendCommand implements IBotCommand {
                     if (userResponse.getResponse() != null) {
                         receiverWallet = new WalletAccountDto(null, userResponse.getResponse().getPublicKey());
                     } else {
-                        throw new TipBotErrorException("User does not have tipbot account");
+                        throw new TipBotErrorException("This user does not have a tipbot account.\nOpen up private chat with me and send /register to sign up.");
                     }
                 } else if (blockchainGateway.isWalletValid(new WalletAccountDto(null, strings[0]))) {
                     receiverWallet = new WalletAccountDto(null, strings[0]);

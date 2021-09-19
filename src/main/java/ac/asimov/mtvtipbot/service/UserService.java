@@ -107,47 +107,12 @@ public class UserService {
         }
 
         if (userResult.getResponse() == null) {
-            return new ResponseWrapperDto<>("User does not exist");
+            return new ResponseWrapperDto<>("This user does not have a tipbot account.\nOpen up private chat with me and send /register to sign up.");
         }
 
         User user = userResult.getResponse();
 
         return new ResponseWrapperDto<>(new WalletAccountDto(null, user.getPublicKey()));
-    }
-
-    public ResponseWrapperDto<WalletAccountDto> getWalletAddressByUsername(String username) {
-        ResponseWrapperDto<User> userResult = getUserByUsername(username);
-        if (userResult.hasErrors()) {
-            return new ResponseWrapperDto<>(userResult.getErrorMessage());
-        }
-
-        if (userResult.getResponse() == null) {
-            return new ResponseWrapperDto<>("User does not exist");
-        }
-
-        User user = userResult.getResponse();
-
-        return new ResponseWrapperDto<>(new WalletAccountDto(null, user.getPublicKey()));
-    }
-
-    public ResponseWrapperDto<WalletAccountDto> getPrivateKeyByUserId(Long userId) {
-        ResponseWrapperDto<User> userResult = getUserByUserId(userId);
-        if (userResult.hasErrors()) {
-            return new ResponseWrapperDto<>(userResult.getErrorMessage());
-        }
-
-        if (userResult.getResponse() == null) {
-            return new ResponseWrapperDto<>("User does not exist");
-        }
-
-        User user = userResult.getResponse();
-        try {
-            String decryptedPrivateKey = CryptoHelper.decrypt(user.getPrivateKey(), userId + "", user.getSalt());
-            return new ResponseWrapperDto<>(new WalletAccountDto(decryptedPrivateKey, null));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseWrapperDto<>("Cannot decrypt private Key");
-        }
     }
 
     public ResponseWrapperDto<WalletAccountDto> getFullWalletAccountByUserId(Long userId) {
@@ -157,7 +122,7 @@ public class UserService {
         }
 
         if (userResult.getResponse() == null) {
-            return new ResponseWrapperDto<>("User does not exist");
+            return new ResponseWrapperDto<>("You do not have a tipbot account.\nOpen up private chat with me and send /register to sign up.");
         }
 
         User user = userResult.getResponse();

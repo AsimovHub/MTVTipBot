@@ -61,15 +61,17 @@ public class WithdrawCommand implements IBotCommand {
                 throw new TipBotErrorException("This command can only be used in private chat. Send me a message!");
             }
 
+            ResponseWrapperDto<WalletAccountDto> fullWalletResponse = userService.getFullWalletAccountByUserId(message.getFrom().getId());
+            if (fullWalletResponse.hasErrors()) {
+                logger.error(fullWalletResponse.getErrorMessage());
+                throw new TipBotErrorException(fullWalletResponse.getErrorMessage());
+            }
+
             if (strings.length == 1) {
                 // Withdraw complete
                 String walletString = strings[0];
                 if (blockchainGateway.isWalletValid(new WalletAccountDto(null, walletString))) {
-                    ResponseWrapperDto<WalletAccountDto> fullWalletResponse = userService.getFullWalletAccountByUserId(message.getFrom().getId());
-                    if (fullWalletResponse.hasErrors()) {
-                        logger.error(fullWalletResponse.getErrorMessage());
-                        throw new TipBotErrorException("Cannot withdraw funds. Some error happened while loading your data");
-                    }
+
                     WalletAccountDto senderWallet = new WalletAccountDto(fullWalletResponse.getResponse().getPrivateKey(), fullWalletResponse.getResponse().getReceiverAddress());
                     WalletAccountDto receiverWallet = new WalletAccountDto(null, walletString);
                     ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendCompleteFunds(new TransferRequestDto(senderWallet, receiverWallet));
@@ -91,20 +93,14 @@ public class WithdrawCommand implements IBotCommand {
                     }
                     BigDecimal amount = new BigDecimal(strings[1]);
                     if (blockchainGateway.isWalletValid(new WalletAccountDto(null, walletString))) {
-                        ResponseWrapperDto<WalletAccountDto> fullWalletResponse = userService.getFullWalletAccountByUserId(message.getFrom().getId());
-                        if (!fullWalletResponse.hasErrors()) {
-                            WalletAccountDto senderWallet = new WalletAccountDto(fullWalletResponse.getResponse().getPrivateKey(), fullWalletResponse.getResponse().getReceiverAddress());
-                            WalletAccountDto receiverWallet = new WalletAccountDto(null, walletString);
-                            ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendFunds(new TransferRequestDto(senderWallet, receiverWallet, amount));
-                            if (sendResponse.hasErrors() || sendResponse.getResponse() == null || StringUtils.isBlank(sendResponse.getResponse().getTransactionHash())) {
-                                throw new TipBotErrorException(sendResponse.getErrorMessage());
-                            } else {
-                                String transactionHash = sendResponse.getResponse().getTransactionHash();
-                                messageString = "You successfully sent " + amount + " $MTV to your wallet.\nThis is the transaction hash:\n[" + transactionHash + "](https://e.mtv.ac/transaction.html?hash=" + transactionHash + ")";
-                            }
+                        WalletAccountDto senderWallet = new WalletAccountDto(fullWalletResponse.getResponse().getPrivateKey(), fullWalletResponse.getResponse().getReceiverAddress());
+                        WalletAccountDto receiverWallet = new WalletAccountDto(null, walletString);
+                        ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendFunds(new TransferRequestDto(senderWallet, receiverWallet, amount));
+                        if (sendResponse.hasErrors() || sendResponse.getResponse() == null || StringUtils.isBlank(sendResponse.getResponse().getTransactionHash())) {
+                            throw new TipBotErrorException(sendResponse.getErrorMessage());
                         } else {
-                            logger.error(fullWalletResponse.getErrorMessage());
-                            throw new TipBotErrorException("Cannot withdraw funds. Some error happened while loading your data");
+                            String transactionHash = sendResponse.getResponse().getTransactionHash();
+                            messageString = "You successfully sent " + amount + " $MTV to your wallet.\nThis is the transaction hash:\n[" + transactionHash + "](https://e.mtv.ac/transaction.html?hash=" + transactionHash + ")";
                         }
                     } else {
                         throw new TipBotErrorException("Invalid address!");
