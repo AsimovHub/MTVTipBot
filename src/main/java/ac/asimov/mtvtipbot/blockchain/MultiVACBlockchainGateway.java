@@ -1,6 +1,7 @@
 package ac.asimov.mtvtipbot.blockchain;
 
 import ac.asimov.mtvtipbot.dtos.*;
+import ac.asimov.mtvtipbot.model.DefaultMessage;
 import ac.asimov.mtvtipbot.service.TransactionService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -175,7 +176,7 @@ public class MultiVACBlockchainGateway {
 
             if (result.hasError()) {
                 if (StringUtils.isBlank(result.getError().getMessage())) {
-                    return new ResponseWrapperDto<>("Server error");
+                    return new ResponseWrapperDto<>(DefaultMessage.SERVER_ERROR);
                 } else {
                     return new ResponseWrapperDto<>(result.getError().getMessage());
                 }

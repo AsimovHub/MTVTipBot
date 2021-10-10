@@ -1,1 +1,1 @@
-service mtvtipbot start
+sudo systemctl start mtvtipbot

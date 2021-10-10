@@ -7,6 +7,7 @@ import ac.asimov.mtvtipbot.dtos.WalletAccountDto;
 import ac.asimov.mtvtipbot.exceptions.TipBotErrorException;
 import ac.asimov.mtvtipbot.helper.CryptoHelper;
 import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
+import ac.asimov.mtvtipbot.model.DefaultMessage;
 import ac.asimov.mtvtipbot.model.User;
 import ac.asimov.mtvtipbot.service.UserService;
 import org.apache.commons.lang3.StringUtils;
@@ -51,7 +52,7 @@ public class RegisterCommand implements IBotCommand {
         messageObject.setReplyToMessageId(message.getMessageId());
         try {
             if (!message.getChat().isUserChat()) {
-                throw new TipBotErrorException("This command can only be used in private chat. Send me a message!");
+                throw new TipBotErrorException(DefaultMessage.PRIVATE_CHAT_COMMAND_IN_PUBLIC_CHAT);
             }
 
             if (userService.doesUserIdExist(message.getFrom().getId())) {
@@ -89,7 +90,7 @@ public class RegisterCommand implements IBotCommand {
                 absSender.execute(messageObject);
             } catch (TelegramApiException e) {
                 e.printStackTrace();
-                throw new TipBotErrorException("Server error");
+                throw new TipBotErrorException(DefaultMessage.SERVER_ERROR);
             }
         } catch (TipBotErrorException e) {
             e.printStackTrace();

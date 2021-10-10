@@ -7,6 +7,7 @@ import ac.asimov.mtvtipbot.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -26,12 +27,15 @@ public class MigrationService {
     @Autowired
     private TransactionDao transactionDao;
 
+    @Value("${tipbot.database.folder}")
+    private String databasePath;
+
     @EventListener(ApplicationReadyEvent.class)
     public void migrateUsers() {
         logger.info("Scanning for database to migrate users");
         Connection conn = null;
         try {
-            File file = new File("database/database.db");
+            File file = new File(databasePath);
             if (!file.exists()) {
                 logger.info("No database for user migration found");
                 return;
@@ -86,7 +90,7 @@ public class MigrationService {
         logger.info("Scanning for database to migrate transaction");
         Connection conn = null;
         try {
-            File file = new File("database/database.db");
+            File file = new File(databasePath);
             if (!file.exists()) {
                 logger.info("No database for user migration found");
                 return;

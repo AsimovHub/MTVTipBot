@@ -3,6 +3,7 @@ package ac.asimov.mtvtipbot.service;
 import ac.asimov.mtvtipbot.dao.TransactionDao;
 import ac.asimov.mtvtipbot.dao.UserDao;
 import ac.asimov.mtvtipbot.dtos.ResponseWrapperDto;
+import ac.asimov.mtvtipbot.model.DefaultMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class StatisticsService {
             return new ResponseWrapperDto<>(userDao.findAll().size());
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseWrapperDto<>("Server error");
+            return new ResponseWrapperDto<>(DefaultMessage.SERVER_ERROR);
         }
     }
 
@@ -37,7 +38,7 @@ public class StatisticsService {
             return new ResponseWrapperDto<>(transactionDao.findAll().size());
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseWrapperDto<>("Server error");
+            return new ResponseWrapperDto<>(DefaultMessage.SERVER_ERROR);
         }
     }
 
@@ -64,7 +65,7 @@ public class StatisticsService {
             response.setResponse(jsonString);
             return response;
         } catch (Exception e) {
-            return new ResponseWrapperDto<>("Server error");
+            return new ResponseWrapperDto<>(DefaultMessage.SERVER_ERROR);
         }
 
     }

@@ -35,7 +35,7 @@ public class InfoCommand implements IBotCommand {
         infoMessage.setReplyToMessageId(message.getMessageId());
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Welcome to the [MultiVAC Tip Bot](https://asimov.ac/tipbot)\n");
+        sb.append("Welcome to the [MultiVAC Tip Bot](https://asimov.ac/tipbot)\n\n");
                 sb.append("This is brought to you by n-three as one of the first projects using the MultiVAC blockchain and is not associated with the official MultiVAC team.\n");
                 sb.append("You can find all of my projects around the MultiVAC blockchain on the [Asimov Hub](https://asimov.ac).");
                 sb.append("\n");

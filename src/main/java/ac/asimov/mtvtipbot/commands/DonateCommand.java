@@ -7,6 +7,7 @@ import ac.asimov.mtvtipbot.dtos.TransferRequestDto;
 import ac.asimov.mtvtipbot.dtos.WalletAccountDto;
 import ac.asimov.mtvtipbot.exceptions.TipBotErrorException;
 import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
+import ac.asimov.mtvtipbot.model.DefaultMessage;
 import ac.asimov.mtvtipbot.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -64,7 +65,7 @@ public class DonateCommand implements IBotCommand {
                 amount = new BigDecimal(strings[0]);
             } catch (NumberFormatException e) {
                 e.printStackTrace();
-                throw new TipBotErrorException("Invalid amount!");
+                throw new TipBotErrorException(DefaultMessage.INVALID_AMOUNT);
             }
 
             ResponseWrapperDto<WalletAccountDto> fullWalletResponse = userService.getFullWalletAccountByUserId(message.getFrom().getId());
@@ -79,30 +80,31 @@ public class DonateCommand implements IBotCommand {
             ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendFunds(new TransferRequestDto(senderWallet, receiverWallet, amount));
 
             if (sendResponse.hasErrors() || sendResponse.getResponse() == null || StringUtils.isBlank(sendResponse.getResponse().getTransactionHash())) {
+                if (StringUtils.equalsIgnoreCase(sendResponse.getErrorMessage(), "already known")) {
+                    throw new TipBotErrorException(DefaultMessage.UNKNOWN_ERROR_CHECK_ACCOUNT_BALANCE);
+                }
                 throw new TipBotErrorException(sendResponse.getErrorMessage());
             } else {
                 String transactionHash = sendResponse.getResponse().getTransactionHash();
-                String messageString = "Thank you very much! <3";
-                messageObject.enableMarkdown(true);
-                messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV1(messageString, true));
-
-                try {
-                    absSender.execute(messageObject);
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
-
                 if (!message.getChat().isUserChat()) {
+                    String messageString = "Thank you very much for supporting this project! <3";
+                    messageObject.enableMarkdown(true);
+                    messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV1(messageString, true));
                     try {
-                        SendMessage privateChatMessage = new SendMessage();
-                        privateChatMessage.setChatId(message.getFrom().getId() + "");
-                        privateChatMessage.enableMarkdown(true);
-                        String privateMessageString = "You have donated " + amount + " $MTV to the developer wallet. \n Thank your very much for supporting this project!!!\nThis is your transaction hash:\n[" + transactionHash + "](https://e.mtv.ac/transaction.html?hash=" + transactionHash + ")";
-                        privateChatMessage.setText(MessageFormatHelper.escapeStringMarkdownV1(privateMessageString));
-                        absSender.execute(privateChatMessage);
+                        absSender.execute(messageObject);
                     } catch (TelegramApiException e) {
                         e.printStackTrace();
                     }
+                }
+                try {
+                    SendMessage privateChatMessage = new SendMessage();
+                    privateChatMessage.setChatId(message.getFrom().getId() + "");
+                    privateChatMessage.enableMarkdown(true);
+                    String privateMessageString = "You have donated " + amount + " $MTV to the developer wallet. \nThank your very much for supporting this project!!!\n\nThis is your transaction hash:\n[" + transactionHash + "](https://e.mtv.ac/transaction.html?hash=" + transactionHash + ")";
+                    privateChatMessage.setText(MessageFormatHelper.escapeStringMarkdownV1(privateMessageString));
+                    absSender.execute(privateChatMessage);
+                } catch (TelegramApiException e) {
+                    e.printStackTrace();
                 }
             }
         } catch (TipBotErrorException e) {

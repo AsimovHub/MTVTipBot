@@ -7,6 +7,7 @@ import ac.asimov.mtvtipbot.dtos.TransferRequestDto;
 import ac.asimov.mtvtipbot.dtos.WalletAccountDto;
 import ac.asimov.mtvtipbot.exceptions.TipBotErrorException;
 import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
+import ac.asimov.mtvtipbot.model.DefaultMessage;
 import ac.asimov.mtvtipbot.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -58,7 +59,7 @@ public class WithdrawCommand implements IBotCommand {
             String messageString;
 
             if (!message.getChat().isUserChat()) {
-                throw new TipBotErrorException("This command can only be used in private chat. Send me a message!");
+                throw new TipBotErrorException(DefaultMessage.PRIVATE_CHAT_COMMAND_IN_PUBLIC_CHAT);
             }
 
             ResponseWrapperDto<WalletAccountDto> fullWalletResponse = userService.getFullWalletAccountByUserId(message.getFrom().getId());
@@ -76,10 +77,13 @@ public class WithdrawCommand implements IBotCommand {
                     WalletAccountDto receiverWallet = new WalletAccountDto(null, walletString);
                     ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendCompleteFunds(new TransferRequestDto(senderWallet, receiverWallet));
                     if (sendResponse.hasErrors() || sendResponse.getResponse() == null || StringUtils.isBlank(sendResponse.getResponse().getTransactionHash())) {
+                        if (StringUtils.equalsIgnoreCase(sendResponse.getErrorMessage(), "already known")) {
+                            throw new TipBotErrorException(DefaultMessage.UNKNOWN_ERROR_CHECK_ACCOUNT_BALANCE);
+                        }
                         throw new TipBotErrorException(sendResponse.getErrorMessage());
                     } else {
                         String transactionHash = sendResponse.getResponse().getTransactionHash();
-                        messageString = "You successfully sent all your $MTV to your wallet.\nThis is the transaction hash:\n[" + transactionHash + "](https://e.mtv.ac/transaction.html?hash=" + transactionHash + ")";
+                        messageString = "You successfully sent all your $MTV to your wallet.\n\nThis is your transaction hash:\n[" + transactionHash + "](https://e.mtv.ac/transaction.html?hash=" + transactionHash + ")";
                     }
                 } else {
                     throw new TipBotErrorException("Invalid address!");
@@ -97,17 +101,20 @@ public class WithdrawCommand implements IBotCommand {
                         WalletAccountDto receiverWallet = new WalletAccountDto(null, walletString);
                         ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendFunds(new TransferRequestDto(senderWallet, receiverWallet, amount));
                         if (sendResponse.hasErrors() || sendResponse.getResponse() == null || StringUtils.isBlank(sendResponse.getResponse().getTransactionHash())) {
+                            if (StringUtils.equalsIgnoreCase(sendResponse.getErrorMessage(), "already known")) {
+                                throw new TipBotErrorException(DefaultMessage.UNKNOWN_ERROR_CHECK_ACCOUNT_BALANCE);
+                            }
                             throw new TipBotErrorException(sendResponse.getErrorMessage());
                         } else {
                             String transactionHash = sendResponse.getResponse().getTransactionHash();
-                            messageString = "You successfully sent " + amount + " $MTV to your wallet.\nThis is the transaction hash:\n[" + transactionHash + "](https://e.mtv.ac/transaction.html?hash=" + transactionHash + ")";
+                            messageString = "You successfully sent " + amount + " $MTV to your wallet.\n\nThis is the your hash:\n[" + transactionHash + "](https://e.mtv.ac/transaction.html?hash=" + transactionHash + ")";
                         }
                     } else {
                         throw new TipBotErrorException("Invalid address!");
                     }
                 } catch (NumberFormatException e) {
                     e.printStackTrace();
-                    throw new TipBotErrorException("Invalid amount!");
+                    throw new TipBotErrorException(DefaultMessage.INVALID_AMOUNT);
                 }
             } else {
                 throw new TipBotErrorException("Invalid usage! Please use /withdraw [wallet] or /withdraw [wallet] [amount]");
@@ -119,12 +126,12 @@ public class WithdrawCommand implements IBotCommand {
                 absSender.execute(messageObject);
             } catch (TelegramApiException e) {
                 e.printStackTrace();
-                throw new TipBotErrorException("Server error");
+                throw new TipBotErrorException(DefaultMessage.SERVER_ERROR);
             }
         } catch (TipBotErrorException e) {
             e.printStackTrace();
             messageObject.enableMarkdownV2(true);
-            messageObject.setText(MessageFormatHelper.escapeStringMarkdownV2(e.getMessage()));
+            messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV2(e.getMessage(), true));
             try {
                 absSender.execute(messageObject);
             } catch (TelegramApiException e1) {

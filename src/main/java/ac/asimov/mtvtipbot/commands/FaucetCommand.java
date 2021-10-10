@@ -31,7 +31,7 @@ public class FaucetCommand implements IBotCommand {
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("Hi there, faucet claiming directly in Telegram is not supported yet but you can get your address with /account, open up the faucet by clicking [this link](https://asimov.ac/faucet) and enter your address");
+        sb.append("Hi there, faucet claiming directly in Telegram is not supported yet but you can get your address with /account, open up the faucet by clicking [this link](https://asimov.ac/faucet) and enter your address.");
 
         String messageString = MessageFormatHelper.escapeStringMarkdownV1(sb.toString());
 

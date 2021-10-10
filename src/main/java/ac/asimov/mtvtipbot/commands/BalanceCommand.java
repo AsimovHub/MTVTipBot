@@ -6,6 +6,7 @@ import ac.asimov.mtvtipbot.dtos.ResponseWrapperDto;
 import ac.asimov.mtvtipbot.dtos.WalletAccountDto;
 import ac.asimov.mtvtipbot.exceptions.TipBotErrorException;
 import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
+import ac.asimov.mtvtipbot.model.DefaultMessage;
 import ac.asimov.mtvtipbot.model.User;
 import ac.asimov.mtvtipbot.service.UserService;
 import org.slf4j.Logger;
@@ -46,17 +47,17 @@ public class BalanceCommand implements IBotCommand {
 
         try {
             if (!message.getChat().isUserChat()) {
-                throw new TipBotErrorException("This command can only be used in private chat. Send me a message!");
+                throw new TipBotErrorException(DefaultMessage.PRIVATE_CHAT_COMMAND_IN_PUBLIC_CHAT);
             }
             // DO YOUR STUFF
 
             Long userId = message.getFrom().getId();
             ResponseWrapperDto<User> userResponse = userService.getUserByUserId(userId);
             if (userResponse.hasErrors()) {
-                throw new TipBotErrorException("Cannot load account. Please notify developer.");
+                throw new TipBotErrorException(DefaultMessage.CANNOT_LOAD_ACCOUNT_PLEASE_NOTIFY_DEV);
             } else {
                 if (userResponse.getResponse() == null) {
-                    throw new TipBotErrorException("You do not have an account yet. Please use /register");
+                    throw new TipBotErrorException(DefaultMessage.NO_ACCOUNT_PLEASE_REGISTER);
                 } else {
                     ResponseWrapperDto<AccountBalanceDto> balanceResponse = blockchainGateway.getAccountBalance(new WalletAccountDto(null, userResponse.getResponse().getPublicKey()));
                     if (balanceResponse.hasErrors()) {
@@ -72,7 +73,7 @@ public class BalanceCommand implements IBotCommand {
                 absSender.execute(messageObject);
             } catch (TelegramApiException e) {
                 e.printStackTrace();
-                throw new TipBotErrorException("Server error");
+                throw new TipBotErrorException(DefaultMessage.SERVER_ERROR);
             }
         } catch (TipBotErrorException e) {
             e.printStackTrace();

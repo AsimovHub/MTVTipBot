@@ -1,1 +1,1 @@
-service mtvtipbot stop
+sudo systemctl stop mtvtipbot

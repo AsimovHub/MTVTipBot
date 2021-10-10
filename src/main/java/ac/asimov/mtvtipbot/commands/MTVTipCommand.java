@@ -4,6 +4,7 @@ import ac.asimov.mtvtipbot.blockchain.MultiVACBlockchainGateway;
 import ac.asimov.mtvtipbot.dtos.*;
 import ac.asimov.mtvtipbot.exceptions.TipBotErrorException;
 import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
+import ac.asimov.mtvtipbot.model.DefaultMessage;
 import ac.asimov.mtvtipbot.model.User;
 import ac.asimov.mtvtipbot.service.UserService;
 import org.apache.commons.lang3.StringUtils;
@@ -83,7 +84,7 @@ public class MTVTipCommand implements IBotCommand {
                 Long receiverUserId = message.getReplyToMessage().getFrom().getId();
 
                 if (!userService.doesUserIdExist(senderUserId)) {
-                    throw new TipBotErrorException("You do not have an account yet.\nOpen up private chat to create an account.");
+                    throw new TipBotErrorException(DefaultMessage.NO_ACCOUNT_PLEASE_REGISTER);
                 }
 
                 ResponseWrapperDto<WalletAccountDto> receiverWalletResponse = userService.getWalletAddressByUserId(receiverUserId);
@@ -97,50 +98,48 @@ public class MTVTipCommand implements IBotCommand {
                     throw new TipBotErrorException(senderWalletResponse.getErrorMessage());
                 }
 
-                try {
-                    ResponseWrapperDto<TransactionResponseDto> transferResponse = blockchainGateway.sendFunds(new TransferRequestDto(senderWalletResponse.getResponse(), receiverWalletResponse.getResponse(), amount));
-                    if (transferResponse.hasErrors()) {
-                        throw new TipBotErrorException("Cannot transfer funds");
-                    } else {
-                        String messageString;
-                        if (StringUtils.isBlank(message.getReplyToMessage().getFrom().getUserName())) {
-                            messageString = "You successfully sent " + amount + " $MTV";
-                        } else {
-                            messageString = "You successfully sent " + amount + " $MTV to @" + message.getReplyToMessage().getFrom().getUserName();
-                        }
-                        messageObject.enableMarkdown(true);
-                        messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV1(messageString, true));
-                        try {
-                            absSender.execute(messageObject);
-                        } catch (TelegramApiException e) {
-                            e.printStackTrace();
-                            throw new TipBotErrorException("Server error");
-                        }
-
-                        try {
-                            SendMessage privateChatMessage = new SendMessage();
-                            privateChatMessage.setChatId(message.getFrom().getId() + "");
-                            privateChatMessage.enableMarkdown(true);
-                            String privateMessageString;
-                            if (StringUtils.isBlank(message.getReplyToMessage().getFrom().getUserName())) {
-                                privateMessageString = "You have sent " + amount + " $MTV to an user without username.\nThis is your transaction hash:\n[" + transferResponse.getResponse().getTransactionHash() + "](https://e.mtv.ac/transaction.html?hash=" + transferResponse.getResponse().getTransactionHash() + ")";
-                            } else {
-                                privateMessageString = "You have sent " + amount + " $MTV to @" + message.getReplyToMessage().getFrom().getUserName() + "\nThis is your transaction hash:\n[" + transferResponse.getResponse().getTransactionHash() + "](https://e.mtv.ac/transaction.html?hash=" + transferResponse.getResponse().getTransactionHash() + ")";
-                            }
-
-                            privateChatMessage.setText(MessageFormatHelper.escapeStringMarkdownV1(privateMessageString));
-                            absSender.execute(privateChatMessage);
-                        } catch (TelegramApiException e) {
-                            e.printStackTrace();
-                        }
+                ResponseWrapperDto<TransactionResponseDto> transferResponse = blockchainGateway.sendFunds(new TransferRequestDto(senderWalletResponse.getResponse(), receiverWalletResponse.getResponse(), amount));
+                if (transferResponse.hasErrors() || transferResponse.getResponse() == null || StringUtils.isBlank(transferResponse.getResponse().getTransactionHash())) {
+                    if (StringUtils.equalsIgnoreCase(transferResponse.getErrorMessage(), "already known")) {
+                        throw new TipBotErrorException(DefaultMessage.UNKNOWN_ERROR_CHECK_ACCOUNT_BALANCE);
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    throw new TipBotErrorException("cannot transfer funds");
+                    throw new TipBotErrorException(transferResponse.getErrorMessage());
+                } else {
+                    String messageString;
+                    if (StringUtils.isBlank(message.getReplyToMessage().getFrom().getUserName())) {
+                        messageString = "You successfully sent " + amount + " $MTV";
+                    } else {
+                        messageString = "You successfully sent " + amount + " $MTV to @" + message.getReplyToMessage().getFrom().getUserName();
+                    }
+                    messageObject.enableMarkdown(true);
+                    messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV1(messageString, true));
+                    try {
+                        absSender.execute(messageObject);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                        throw new TipBotErrorException(DefaultMessage.SERVER_ERROR);
+                    }
+
+                    try {
+                        SendMessage privateChatMessage = new SendMessage();
+                        privateChatMessage.setChatId(message.getFrom().getId() + "");
+                        privateChatMessage.enableMarkdown(true);
+                        String privateMessageString;
+                        if (StringUtils.isBlank(message.getReplyToMessage().getFrom().getUserName())) {
+                            privateMessageString = "You have sent " + amount + " $MTV to an user without username.\n\nThis is your transaction hash:\n[" + transferResponse.getResponse().getTransactionHash() + "](https://e.mtv.ac/transaction.html?hash=" + transferResponse.getResponse().getTransactionHash() + ")";
+                        } else {
+                            privateMessageString = "You have sent " + amount + " $MTV to @" + message.getReplyToMessage().getFrom().getUserName() + "\n\nThis is your transaction hash:\n[" + transferResponse.getResponse().getTransactionHash() + "](https://e.mtv.ac/transaction.html?hash=" + transferResponse.getResponse().getTransactionHash() + ")";
+                        }
+
+                        privateChatMessage.setText(MessageFormatHelper.escapeStringMarkdownV1(privateMessageString));
+                        absSender.execute(privateChatMessage);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
                 }
             } catch (NumberFormatException e) {
                 e.printStackTrace();
-                throw new TipBotErrorException("Invalid amount!");
+                throw new TipBotErrorException(DefaultMessage.INVALID_AMOUNT);
             }
         } catch (TipBotErrorException e) {
             e.printStackTrace();
