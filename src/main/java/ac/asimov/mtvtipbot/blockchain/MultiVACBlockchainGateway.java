@@ -1,7 +1,7 @@
 package ac.asimov.mtvtipbot.blockchain;
 
 import ac.asimov.mtvtipbot.dtos.*;
-import ac.asimov.mtvtipbot.model.DefaultMessage;
+import ac.asimov.mtvtipbot.helper.DefaultMessage;
 import ac.asimov.mtvtipbot.service.TransactionService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

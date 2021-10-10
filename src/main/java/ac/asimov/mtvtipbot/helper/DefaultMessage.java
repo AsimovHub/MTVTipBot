@@ -1,4 +1,4 @@
-package ac.asimov.mtvtipbot.model;
+package ac.asimov.mtvtipbot.helper;
 
 public class DefaultMessage {
 
@@ -7,5 +7,5 @@ public class DefaultMessage {
     public static final String NO_ACCOUNT_PLEASE_REGISTER = "You do not have an account yet.\nOpen up private chat and use /register to create an account.";
     public static final String CANNOT_LOAD_ACCOUNT_PLEASE_NOTIFY_DEV = "Cannot load account. Please notify developer.";
     public static final String INVALID_AMOUNT = "Invalid amount!";
-    public static final String SERVER_ERROR = DefaultMessage.SERVER_ERROR;
+    public static final String SERVER_ERROR = "Server error";
 }

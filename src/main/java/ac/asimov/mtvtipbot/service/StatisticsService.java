@@ -3,7 +3,7 @@ package ac.asimov.mtvtipbot.service;
 import ac.asimov.mtvtipbot.dao.TransactionDao;
 import ac.asimov.mtvtipbot.dao.UserDao;
 import ac.asimov.mtvtipbot.dtos.ResponseWrapperDto;
-import ac.asimov.mtvtipbot.model.DefaultMessage;
+import ac.asimov.mtvtipbot.helper.DefaultMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -6,7 +6,7 @@ import ac.asimov.mtvtipbot.dtos.ResponseWrapperDto;
 import ac.asimov.mtvtipbot.dtos.WalletAccountDto;
 import ac.asimov.mtvtipbot.exceptions.TipBotErrorException;
 import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
-import ac.asimov.mtvtipbot.model.DefaultMessage;
+import ac.asimov.mtvtipbot.helper.DefaultMessage;
 import ac.asimov.mtvtipbot.model.User;
 import ac.asimov.mtvtipbot.service.UserService;
 import org.slf4j.Logger;

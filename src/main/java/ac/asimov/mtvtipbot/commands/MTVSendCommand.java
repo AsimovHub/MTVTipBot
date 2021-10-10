@@ -4,7 +4,7 @@ import ac.asimov.mtvtipbot.blockchain.MultiVACBlockchainGateway;
 import ac.asimov.mtvtipbot.dtos.*;
 import ac.asimov.mtvtipbot.exceptions.TipBotErrorException;
 import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
-import ac.asimov.mtvtipbot.model.DefaultMessage;
+import ac.asimov.mtvtipbot.helper.DefaultMessage;
 import ac.asimov.mtvtipbot.model.User;
 import ac.asimov.mtvtipbot.service.UserService;
 import org.apache.commons.lang3.StringUtils;
