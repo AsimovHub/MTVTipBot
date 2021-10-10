@@ -91,6 +91,11 @@ public class MultiVACBlockchainGateway {
 
             if (ethSendTransaction.hasError()) {
                 String errorMessage = ethSendTransaction.getError() != null ? ethSendTransaction.getError().getMessage() : "Blockchain error";
+                if (StringUtils.equals(errorMessage, "replacement transaction underpriced")) {
+                    errorMessage = "Please wait some time to process the current transaction";
+                } else if (StringUtils.equals(errorMessage, "already known")) {
+                    errorMessage = DefaultMessage.UNKNOWN_ERROR_CHECK_ACCOUNT_BALANCE;
+                }
                 logger.error(errorMessage);
                 return new ResponseWrapperDto<>(errorMessage);
             }

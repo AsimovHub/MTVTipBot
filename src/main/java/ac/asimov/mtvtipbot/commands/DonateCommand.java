@@ -80,9 +80,6 @@ public class DonateCommand implements IBotCommand {
             ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendFunds(new TransferRequestDto(senderWallet, receiverWallet, amount));
 
             if (sendResponse.hasErrors() || sendResponse.getResponse() == null || StringUtils.isBlank(sendResponse.getResponse().getTransactionHash())) {
-                if (StringUtils.equalsIgnoreCase(sendResponse.getErrorMessage(), "already known")) {
-                    throw new TipBotErrorException(DefaultMessage.UNKNOWN_ERROR_CHECK_ACCOUNT_BALANCE);
-                }
                 throw new TipBotErrorException(sendResponse.getErrorMessage());
             } else {
                 String transactionHash = sendResponse.getResponse().getTransactionHash();

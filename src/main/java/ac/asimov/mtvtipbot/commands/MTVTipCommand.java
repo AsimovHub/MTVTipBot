@@ -100,9 +100,6 @@ public class MTVTipCommand implements IBotCommand {
 
                 ResponseWrapperDto<TransactionResponseDto> transferResponse = blockchainGateway.sendFunds(new TransferRequestDto(senderWalletResponse.getResponse(), receiverWalletResponse.getResponse(), amount));
                 if (transferResponse.hasErrors() || transferResponse.getResponse() == null || StringUtils.isBlank(transferResponse.getResponse().getTransactionHash())) {
-                    if (StringUtils.equalsIgnoreCase(transferResponse.getErrorMessage(), "already known")) {
-                        throw new TipBotErrorException(DefaultMessage.UNKNOWN_ERROR_CHECK_ACCOUNT_BALANCE);
-                    }
                     throw new TipBotErrorException(transferResponse.getErrorMessage());
                 } else {
                     String messageString;
