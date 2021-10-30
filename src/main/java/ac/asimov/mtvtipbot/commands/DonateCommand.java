@@ -83,6 +83,7 @@ public class DonateCommand implements IBotCommand {
                 throw new TipBotErrorException(sendResponse.getErrorMessage());
             } else {
                 String transactionHash = sendResponse.getResponse().getTransactionHash();
+
                 if (!message.getChat().isUserChat()) {
                     String messageString = "Thank you very much for supporting this project! <3";
                     messageObject.enableMarkdown(true);

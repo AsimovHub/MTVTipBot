@@ -1,9 +1,14 @@
 package ac.asimov.mtvtipbot.model;
 
-import javax.persistence.*;
+import org.springframework.data.rest.core.annotation.RestResource;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.time.LocalDateTime;
 
 @Entity
+@RestResource(exported = false)
 @Table(name = "users")
 public class User {
 

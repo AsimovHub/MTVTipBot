@@ -1,11 +1,11 @@
 package ac.asimov.mtvtipbot;
 
 import ac.asimov.mtvtipbot.blockchain.MultiVACBlockchainGateway;
-import ac.asimov.mtvtipbot.dtos.EncryptionPairDto;
 import ac.asimov.mtvtipbot.dtos.ResponseWrapperDto;
 import ac.asimov.mtvtipbot.dtos.TransferRequestDto;
 import ac.asimov.mtvtipbot.dtos.WalletAccountDto;
-import ac.asimov.mtvtipbot.helper.CryptoHelper;
+import ac.asimov.mtvtipbot.service.TransactionService;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,18 +20,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.web3j.crypto.ECKeyPair;
-import org.web3j.crypto.Keys;
 import org.web3j.crypto.WalletUtils;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ContextConfiguration(classes = { MTVTipBotApplication.class })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {
+		TransactionService.class,
 		MultiVACBlockchainGateway.class })
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration
@@ -49,6 +47,7 @@ class MultiVACBlockchainGatewayTest {
 	@Test
 	void testWalletCreation() throws Exception {
 		WalletAccountDto wallet = blockchainGateway.generateNewWallet();
+		assertTrue(StringUtils.startsWith(wallet.getReceiverAddress(), "0x"));
 		assertTrue(blockchainGateway.isWalletValid(wallet));
 		assertTrue(WalletUtils.isValidPrivateKey(wallet.getPrivateKey()));
 	}

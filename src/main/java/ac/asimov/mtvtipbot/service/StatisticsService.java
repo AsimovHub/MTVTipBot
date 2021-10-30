@@ -3,6 +3,7 @@ package ac.asimov.mtvtipbot.service;
 import ac.asimov.mtvtipbot.dao.TransactionDao;
 import ac.asimov.mtvtipbot.dao.UserDao;
 import ac.asimov.mtvtipbot.dtos.ResponseWrapperDto;
+import ac.asimov.mtvtipbot.dtos.TipbotStatisticsResponseDto;
 import ac.asimov.mtvtipbot.helper.DefaultMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,5 +69,18 @@ public class StatisticsService {
             return new ResponseWrapperDto<>(DefaultMessage.SERVER_ERROR);
         }
 
+    }
+
+    public ResponseWrapperDto<TipbotStatisticsResponseDto> getTipbotStatistics() {
+        ResponseWrapperDto<Integer> totalUserResponse = getTotalUserCount();
+        if (totalUserResponse.hasErrors()) {
+            return new ResponseWrapperDto<>(totalUserResponse.getErrorMessage());
+        }
+        ResponseWrapperDto<Integer> totalTransactionResponse = getTotalTransactionCount();
+        if (totalTransactionResponse.hasErrors()) {
+            return new ResponseWrapperDto<>(totalTransactionResponse.getErrorMessage());
+        }
+
+        return new ResponseWrapperDto<>(new TipbotStatisticsResponseDto(totalUserResponse.getResponse(), totalTransactionResponse.getResponse()));
     }
 }

@@ -3,6 +3,7 @@ package ac.asimov.mtvtipbot;
 import ac.asimov.mtvtipbot.blockchain.MultiVACBlockchainGateway;
 import ac.asimov.mtvtipbot.dtos.EncryptionPairDto;
 import ac.asimov.mtvtipbot.helper.CryptoHelper;
+import ac.asimov.mtvtipbot.service.TransactionService;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -25,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @ContextConfiguration(classes = { MTVTipBotApplication.class })
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes = {
+		TransactionService.class,
 		MultiVACBlockchainGateway.class })
 @RunWith(SpringRunner.class)
 @EnableAutoConfiguration

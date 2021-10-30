@@ -1,7 +1,5 @@
 package ac.asimov.mtvtipbot;
 
-import ac.asimov.mtvtipbot.bots.MTVTipBot;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -9,15 +7,13 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.util.concurrent.Executor;
 
-@SpringBootApplication(scanBasePackages = { "ac.asimov.mtvtipbot", "ac.asimov.mtvtipbot.*" })
+@SpringBootApplication
 @EnableScheduling
 @EnableAsync
+@ComponentScan({ "ac.asimov.mtvtipbot", "ac.asimov.mtvtipbot.*" })
 public class MTVTipBotApplication {
 
 	public static void main(String[] args) {
@@ -35,4 +31,18 @@ public class MTVTipBotApplication {
 		return executor;
 	}
 
+	/*
+	@Bean
+	public WebMvcConfigurer corsConfigurer() {
+		return new WebMvcConfigurer() {
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("/**")
+						.allowedOrigins("http://localhost:3000")
+						.allowedMethods("GET", "POST", "PUT", "DELETE", "HEAD", "PATCH")
+						.allowCredentials(true);
+			}
+		};
+	}
+	 */
 }
