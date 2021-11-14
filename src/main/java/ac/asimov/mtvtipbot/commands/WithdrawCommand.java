@@ -101,7 +101,7 @@ public class WithdrawCommand implements IBotCommand {
                             throw new TipBotErrorException(sendResponse.getErrorMessage());
                         } else {
                             String transactionHash = sendResponse.getResponse().getTransactionHash();
-                            messageString = "You successfully sent " + amount + " $MTV to your wallet.\n\nThis is the your hash:\n[" + transactionHash + "](https://e.mtv.ac/transaction.html?hash=" + transactionHash + ")";
+                            messageString = "You successfully sent " + amount + " $MTV to your wallet.\n\nThis is the transaction hash:\n[" + transactionHash + "](https://e.mtv.ac/transaction.html?hash=" + transactionHash + ")";
                         }
                     } else {
                         throw new TipBotErrorException("Invalid address!");

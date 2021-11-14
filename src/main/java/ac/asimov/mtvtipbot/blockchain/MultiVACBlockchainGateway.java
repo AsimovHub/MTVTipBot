@@ -63,30 +63,21 @@ public class MultiVACBlockchainGateway {
             BigDecimal weiAmount = Convert.toWei(request.getAmount(), Convert.Unit.ETHER);
             Credentials credentials = Credentials.create(request.getSender().getPrivateKey());
 
-            // A transfer cost 21,000 units of gas
             BigInteger gasLimit = BigInteger.valueOf(21000);
 
-            // I am willing to pay 1Gwei (1,000,000,000 wei or 0.000000001 ether) for each unit of gas consumed by the transaction.
             BigInteger gasPrice = Convert.toWei("1", Convert.Unit.GWEI).toBigInteger();
-            // String from, BigInteger nonce, BigInteger gasPrice, BigInteger gasLimit, String to, BigInteger value
-            // Get nonce
             EthGetTransactionCount ethGetTransactionCount = web3.ethGetTransactionCount(credentials.getAddress(), DefaultBlockParameterName.LATEST).send();
             BigInteger nonce =  ethGetTransactionCount.getTransactionCount();
 
-            // Prepare the rawTransaction
             RawTransaction rawTransaction  = RawTransaction.createEtherTransaction(
                     nonce,
                     gasPrice,
                     gasLimit,
                     request.getReceiver().getReceiverAddress(),
                     weiAmount.toBigInteger());
-
-            // Sign the transaction
             byte[] signedMessage = TransactionEncoder.signMessage(rawTransaction, Integer.parseInt(chainId), credentials);
 
-            // Convert it to Hexadecimal String to be sent to the node
             String hexValue = Numeric.toHexString(signedMessage);
-            // Send transaction
             EthSendTransaction ethSendTransaction = web3.ethSendRawTransaction(hexValue).send();
 
             if (ethSendTransaction.hasError()) {
@@ -100,9 +91,7 @@ public class MultiVACBlockchainGateway {
                 return new ResponseWrapperDto<>(errorMessage);
             }
 
-            // Get the transaction hash
             String transactionHash = ethSendTransaction.getTransactionHash();
-
             transactionService.createTransaction(request, transactionHash);
 
             return new ResponseWrapperDto<>(new TransactionResponseDto(transactionHash));
@@ -177,7 +166,8 @@ public class MultiVACBlockchainGateway {
                     gasPrice,
                     gasLimit,
                     request.getReceiver().getReceiverAddress(),
-                    Convert.toWei(request.getAmount() != null ? request.getAmount().toString() : "0.1", Convert.Unit.ETHER).toBigInteger());EthEstimateGas result = web3.ethEstimateGas(estTransaction).send();
+                    Convert.toWei(request.getAmount() != null ? request.getAmount().toString() : "0.1", Convert.Unit.ETHER).toBigInteger());
+            EthEstimateGas result = web3.ethEstimateGas(estTransaction).send();
 
             if (result.hasError()) {
                 if (StringUtils.isBlank(result.getError().getMessage())) {
@@ -191,7 +181,7 @@ public class MultiVACBlockchainGateway {
             return new ResponseWrapperDto<>(gasInEther);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseWrapperDto("RPC error");
+            return new ResponseWrapperDto<>("RPC error");
         }
     }
 
