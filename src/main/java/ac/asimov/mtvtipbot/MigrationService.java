@@ -16,6 +16,10 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.*;
 
+/**
+ * This service is used to migrate the sqlite database of the original tipbot (written using nodejs) to the current tipbot's mysql database
+ */
+
 @Service
 public class MigrationService {
 
@@ -27,7 +31,7 @@ public class MigrationService {
     @Autowired
     private TransactionDao transactionDao;
 
-    @Value("${tipbot.database.folder}")
+    @Value("${tipbot.database.migrationFolder}")
     private String databasePath;
 
     @EventListener(ApplicationReadyEvent.class)
