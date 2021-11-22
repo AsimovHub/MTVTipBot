@@ -3,8 +3,8 @@ package ac.asimov.mtvtipbot.commands;
 import ac.asimov.mtvtipbot.blockchain.MultiVACBlockchainGateway;
 import ac.asimov.mtvtipbot.dtos.*;
 import ac.asimov.mtvtipbot.exceptions.TipBotErrorException;
-import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
 import ac.asimov.mtvtipbot.helper.DefaultMessage;
+import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
 import ac.asimov.mtvtipbot.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,7 +20,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.math.BigDecimal;
 
 @Component
-public class MTVTipCommand implements IBotCommand {
+public class ISAACTipCommand implements IBotCommand {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
@@ -30,17 +30,17 @@ public class MTVTipCommand implements IBotCommand {
     @Autowired
     private MultiVACBlockchainGateway blockchainGateway;
 
-    public MTVTipCommand() {
+    public ISAACTipCommand() {
     }
 
     @Override
     public String getCommandIdentifier() {
-        return "mtvtip";
+        return "isaactip";
     }
 
     @Override
     public String getDescription() {
-        return "Send given tip amount to replied user";
+        return "Send given tip amount in ISAAC to replied user";
     }
 
     @Override
@@ -59,7 +59,7 @@ public class MTVTipCommand implements IBotCommand {
             }
 
             if (strings.length != 1) {
-                throw new TipBotErrorException("Invalid usage! Please reply /mtvtip [amount] to a sent message");
+                throw new TipBotErrorException("Invalid usage! Please reply /isaactip [amount] to a sent message");
             }
 
             if (!message.isReply() || message.getReplyToMessage() == null || message.getReplyToMessage().getFrom() == null) {
@@ -67,7 +67,7 @@ public class MTVTipCommand implements IBotCommand {
             }
 
             if (message.getReplyToMessage().getFrom().getIsBot()) {
-                throw new TipBotErrorException("You can send no MTV to bots");
+                throw new TipBotErrorException("You can send no ISAAC to bots");
             }
 
             // Withdraw given amount
@@ -94,15 +94,26 @@ public class MTVTipCommand implements IBotCommand {
                     throw new TipBotErrorException(senderWalletResponse.getErrorMessage());
                 }
 
-                ResponseWrapperDto<TransactionResponseDto> transferResponse = blockchainGateway.sendMTVFunds(new TransferRequestDto(senderWalletResponse.getResponse(), receiverWalletResponse.getResponse(), amount));
+                ResponseWrapperDto<AccountBalanceDto> mtvBalanceResponse = blockchainGateway.getMTVAccountBalance(senderWalletResponse.getResponse());
+
+                if (mtvBalanceResponse.hasErrors() || mtvBalanceResponse.getResponse() == null) {
+                    throw new TipBotErrorException("Cannot fetch MTV balance, which is require as gas fee to transfer ISAAC.");
+                }
+
+                if (mtvBalanceResponse.getResponse().getAmount().compareTo(BigDecimal.valueOf(0.005)) < 0) {
+                    throw new TipBotErrorException("You need to hold at least 0.0005 MTV to use this tipbot");
+                }
+
+
+                ResponseWrapperDto<TransactionResponseDto> transferResponse = blockchainGateway.sendISAACFunds(new TransferRequestDto(senderWalletResponse.getResponse(), receiverWalletResponse.getResponse(), amount));
                 if (transferResponse.hasErrors() || transferResponse.getResponse() == null || StringUtils.isBlank(transferResponse.getResponse().getTransactionHash())) {
                     throw new TipBotErrorException(transferResponse.getErrorMessage());
                 } else {
                     String messageString;
                     if (StringUtils.isBlank(message.getReplyToMessage().getFrom().getUserName())) {
-                        messageString = "You successfully sent " + amount + " $MTV";
+                        messageString = "You successfully sent " + amount + " $ISAAC";
                     } else {
-                        messageString = "You successfully sent " + amount + " $MTV to @" + message.getReplyToMessage().getFrom().getUserName();
+                        messageString = "You successfully sent " + amount + " $ISAAC to @" + message.getReplyToMessage().getFrom().getUserName();
                     }
                     messageObject.enableMarkdown(true);
                     messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV1(messageString, true));
@@ -119,9 +130,9 @@ public class MTVTipCommand implements IBotCommand {
                         privateChatMessage.enableMarkdown(true);
                         String privateMessageString;
                         if (StringUtils.isBlank(message.getReplyToMessage().getFrom().getUserName())) {
-                            privateMessageString = "You have sent " + amount + " $MTV to an user without username.\n\nThis is your transaction hash:\n[" + transferResponse.getResponse().getTransactionHash() + "](https://e.mtv.ac/transaction.html?hash=" + transferResponse.getResponse().getTransactionHash() + ")";
+                            privateMessageString = "You have sent " + amount + " $ISAAC to an user without username.\n\nThis is your transaction hash:\n[" + transferResponse.getResponse().getTransactionHash() + "](https://e.mtv.ac/transaction.html?hash=" + transferResponse.getResponse().getTransactionHash() + ")";
                         } else {
-                            privateMessageString = "You have sent " + amount + " $MTV to @" + message.getReplyToMessage().getFrom().getUserName() + "\n\nThis is your transaction hash:\n[" + transferResponse.getResponse().getTransactionHash() + "](https://e.mtv.ac/transaction.html?hash=" + transferResponse.getResponse().getTransactionHash() + ")";
+                            privateMessageString = "You have sent " + amount + " $ISAAC to @" + message.getReplyToMessage().getFrom().getUserName() + "\n\nThis is your transaction hash:\n[" + transferResponse.getResponse().getTransactionHash() + "](https://e.mtv.ac/transaction.html?hash=" + transferResponse.getResponse().getTransactionHash() + ")";
                         }
 
                         privateChatMessage.setText(MessageFormatHelper.escapeStringMarkdownV1(privateMessageString));

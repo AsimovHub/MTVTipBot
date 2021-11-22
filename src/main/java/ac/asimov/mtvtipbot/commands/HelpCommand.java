@@ -40,6 +40,8 @@ public class HelpCommand implements IBotCommand {
             sb.append("/donate [amount] - Donate given amount to the dev wallet\n");
             sb.append("/mtvsend [user] [amount] - Send given amount of MTV to the given user\n");
             sb.append("/mtvsend [user] [wallet] - Send given amount of MTV to the given wallet address\n");
+            sb.append("/isaacsend [user] [amount] - Send given amount of ISAAC to the given user\n");
+            sb.append("/isaacsend [user] [wallet] - Send given amount of ISAAC to the given wallet address\n");
             sb.append("\n");
 
             sb.append("Private Chat commands:\n");
@@ -51,6 +53,7 @@ public class HelpCommand implements IBotCommand {
 
             sb.append("Group Chat commands:\n");
             sb.append("/mtvtip [amount] - Send given amount of MTV to replied user\n");
+            sb.append("/isaactip [amount] - Send given amount of ISAAC to replied user\n");
 
 
             String messageString = sb.toString();

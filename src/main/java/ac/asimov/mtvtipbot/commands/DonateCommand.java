@@ -77,7 +77,7 @@ public class DonateCommand implements IBotCommand {
             WalletAccountDto senderWallet = new WalletAccountDto(fullWalletResponse.getResponse().getPrivateKey(), fullWalletResponse.getResponse().getReceiverAddress());
             WalletAccountDto receiverWallet = new WalletAccountDto(null, developerWallet);
 
-            ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendFunds(new TransferRequestDto(senderWallet, receiverWallet, amount));
+            ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendMTVFunds(new TransferRequestDto(senderWallet, receiverWallet, amount));
 
             if (sendResponse.hasErrors() || sendResponse.getResponse() == null || StringUtils.isBlank(sendResponse.getResponse().getTransactionHash())) {
                 throw new TipBotErrorException(sendResponse.getErrorMessage());

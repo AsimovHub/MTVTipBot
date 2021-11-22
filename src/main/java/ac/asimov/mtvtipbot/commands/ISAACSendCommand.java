@@ -3,8 +3,8 @@ package ac.asimov.mtvtipbot.commands;
 import ac.asimov.mtvtipbot.blockchain.MultiVACBlockchainGateway;
 import ac.asimov.mtvtipbot.dtos.*;
 import ac.asimov.mtvtipbot.exceptions.TipBotErrorException;
-import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
 import ac.asimov.mtvtipbot.helper.DefaultMessage;
+import ac.asimov.mtvtipbot.helper.MessageFormatHelper;
 import ac.asimov.mtvtipbot.model.User;
 import ac.asimov.mtvtipbot.service.UserService;
 import org.apache.commons.lang3.StringUtils;
@@ -21,7 +21,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.math.BigDecimal;
 
 @Component
-public class MTVSendCommand implements IBotCommand {
+public class ISAACSendCommand implements IBotCommand {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
@@ -30,17 +30,17 @@ public class MTVSendCommand implements IBotCommand {
     @Autowired
     private MultiVACBlockchainGateway blockchainGateway;
 
-    public MTVSendCommand() {
+    public ISAACSendCommand() {
     }
 
     @Override
     public String getCommandIdentifier() {
-        return "mtvsend";
+        return "isaacsend";
     }
 
     @Override
     public String getDescription() {
-        return "Send MTV to the given user";
+        return "Send ISAAC to the given user";
     }
 
     @Override
@@ -56,7 +56,7 @@ public class MTVSendCommand implements IBotCommand {
         try {
 
             if (strings.length != 2) {
-                throw new TipBotErrorException("Invalid usage! Please reply /mtvsend [@user] [amount] or /mtvsend [wallet] [amount]");
+                throw new TipBotErrorException("Invalid usage! Please reply /isaacsend [@user] [amount] or /isaacsend [wallet] [amount]");
             }
 
             // Withdraw given amount
@@ -75,7 +75,7 @@ public class MTVSendCommand implements IBotCommand {
                 } else if (blockchainGateway.isWalletValid(new WalletAccountDto(null, strings[0]))) {
                     receiverWallet = new WalletAccountDto(null, strings[0]);
                 } else {
-                    throw new TipBotErrorException("You must mention a user or use a valid wallet address (this starts with 0x)\n/mtvsend [user/wallet] [amount]");
+                    throw new TipBotErrorException("You must mention a user or use a valid wallet address (this starts with 0x)\n/isaacsend [user/wallet] [amount]");
                 }
 
                 if (StringUtils.startsWith(strings[1], ".")) {
@@ -93,11 +93,23 @@ public class MTVSendCommand implements IBotCommand {
                     throw new TipBotErrorException(senderWalletResponse.getErrorMessage());
                 }
 
-                ResponseWrapperDto<TransactionResponseDto> transferResponse = blockchainGateway.sendMTVFunds(new TransferRequestDto(senderWalletResponse.getResponse(), receiverWallet, amount));
+                ResponseWrapperDto<AccountBalanceDto> mtvBalanceResponse = blockchainGateway.getMTVAccountBalance(senderWalletResponse.getResponse());
+
+                if (mtvBalanceResponse.hasErrors() || mtvBalanceResponse.getResponse() == null) {
+                    throw new TipBotErrorException("Cannot fetch MTV balance, which is require as gas fee to transfer ISAAC.");
+                }
+
+                if (mtvBalanceResponse.getResponse().getAmount().compareTo(BigDecimal.valueOf(0.005)) < 0) {
+                    throw new TipBotErrorException("You need to hold at least 0.0005 MTV to use this tipbot");
+                }
+
+                ResponseWrapperDto<TransactionResponseDto> transferResponse = blockchainGateway.sendISAACFunds(new TransferRequestDto(senderWalletResponse.getResponse(), receiverWallet, amount));
+
                 if (transferResponse.hasErrors() || transferResponse.getResponse() == null || StringUtils.isBlank(transferResponse.getResponse().getTransactionHash())) {
+                    logger.error("Error: " + transferResponse.getErrorMessage());
                     throw new TipBotErrorException(transferResponse.getErrorMessage());
                 } else {
-                    String messageString = ((message.getChat().isUserChat() || StringUtils.isBlank(message.getFrom().getUserName())) ? "You" : "@" + message.getFrom().getUserName()) + " successfully sent " + amount + " $MTV to " + strings[0];
+                    String messageString = ((message.getChat().isUserChat() || StringUtils.isBlank(message.getFrom().getUserName())) ? "You" : "@" + message.getFrom().getUserName()) + " successfully sent " + amount + " $ISAAC to " + strings[0];
                     String escapedString;
                     if (message.getChat().isUserChat()) {
                          escapedString = MessageFormatHelper.escapeStringMarkdownV1(messageString + "\n\nThis is your transaction hash:\n[" + transferResponse.getResponse().getTransactionHash() + "](https://e.mtv.ac/transaction.html?hash=" + transferResponse.getResponse().getTransactionHash() + ")");
@@ -119,7 +131,7 @@ public class MTVSendCommand implements IBotCommand {
                             SendMessage privateChatMessage = new SendMessage();
                             privateChatMessage.setChatId(message.getFrom().getId() + "");
                             privateChatMessage.enableMarkdown(true);
-                            String privateMessageString = "You have sent " + amount + " $MTV to " + strings[0] + "\n\nThis is your transaction hash:\n[" + transferResponse.getResponse().getTransactionHash() + "](https://e.mtv.ac/transaction.html?hash=" + transferResponse.getResponse().getTransactionHash() + ")";
+                            String privateMessageString = "You have sent " + amount + " $ISAAC to " + strings[0] + "\n\nThis is your transaction hash:\n[" + transferResponse.getResponse().getTransactionHash() + "](https://e.mtv.ac/transaction.html?hash=" + transferResponse.getResponse().getTransactionHash() + ")";
                             privateChatMessage.setText(MessageFormatHelper.escapeStringMarkdownV1(privateMessageString));
                             absSender.execute(privateChatMessage);
                         } catch (TelegramApiException e) {

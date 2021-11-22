@@ -19,6 +19,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.bots.AbsSender;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.math.RoundingMode;
+
 @Component
 public class BalanceCommand implements IBotCommand {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -59,14 +61,27 @@ public class BalanceCommand implements IBotCommand {
                 if (userResponse.getResponse() == null) {
                     throw new TipBotErrorException(DefaultMessage.NO_ACCOUNT_PLEASE_REGISTER);
                 } else {
-                    ResponseWrapperDto<AccountBalanceDto> balanceResponse = blockchainGateway.getAccountBalance(new WalletAccountDto(null, userResponse.getResponse().getPublicKey()));
-                    if (balanceResponse.hasErrors()) {
+                    ResponseWrapperDto<AccountBalanceDto> mtvBalanceResponse = blockchainGateway.getMTVAccountBalance(new WalletAccountDto(null, userResponse.getResponse().getPublicKey()));
+                    ResponseWrapperDto<AccountBalanceDto> isaacBalanceResponse = blockchainGateway.getISAACAccountBalance(new WalletAccountDto(null, userResponse.getResponse().getPublicKey()));
+                    if (mtvBalanceResponse.hasErrors() && isaacBalanceResponse.hasErrors()) {
                         throw new TipBotErrorException("Error while fetching account balance");
                     } else {
-                        String messageString = "Balance of your Wallet is " + balanceResponse.getResponse().getAmount().toString() + " $MTV";
+                        String messageString = "Balances of your Wallet is:\n";
+                        if (mtvBalanceResponse.hasErrors() || mtvBalanceResponse.getResponse() == null || mtvBalanceResponse.getResponse().getAmount() == null) {
+                            messageString += "$MTV Error\n";
+                        } else {
+                            messageString += mtvBalanceResponse.getResponse().getAmount().setScale(6, RoundingMode.HALF_UP).toString() + " $MTV\n";
+                        }
+                        if (isaacBalanceResponse.hasErrors() || isaacBalanceResponse.getResponse() == null || isaacBalanceResponse.getResponse().getAmount() == null) {
+                            messageString += "$ISAAC Error";
+                        } else {
+                            messageString += isaacBalanceResponse.getResponse().getAmount().setScale(6, RoundingMode.HALF_UP).toString() + " $ISAAC\n";
+                        }
+                        messageString += "\n\nPlease note only $MTV & $ISAAC are supported. Do not send other funds to this wallet.";
                         messageObject.enableMarkdown(true);
                         messageObject.setText(MessageFormatHelper.appendDisclaimerAndEscapeMarkdownV1(messageString, true));
                     }
+
                 }
             }
             try {

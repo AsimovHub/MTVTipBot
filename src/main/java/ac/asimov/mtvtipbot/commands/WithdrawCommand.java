@@ -75,7 +75,7 @@ public class WithdrawCommand implements IBotCommand {
 
                     WalletAccountDto senderWallet = new WalletAccountDto(fullWalletResponse.getResponse().getPrivateKey(), fullWalletResponse.getResponse().getReceiverAddress());
                     WalletAccountDto receiverWallet = new WalletAccountDto(null, walletString);
-                    ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendCompleteFunds(new TransferRequestDto(senderWallet, receiverWallet));
+                    ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendMTVCompleteFunds(new TransferRequestDto(senderWallet, receiverWallet));
                     if (sendResponse.hasErrors() || sendResponse.getResponse() == null || StringUtils.isBlank(sendResponse.getResponse().getTransactionHash())) {
                         throw new TipBotErrorException(sendResponse.getErrorMessage());
                     } else {
@@ -96,7 +96,7 @@ public class WithdrawCommand implements IBotCommand {
                     if (blockchainGateway.isWalletValid(new WalletAccountDto(null, walletString))) {
                         WalletAccountDto senderWallet = new WalletAccountDto(fullWalletResponse.getResponse().getPrivateKey(), fullWalletResponse.getResponse().getReceiverAddress());
                         WalletAccountDto receiverWallet = new WalletAccountDto(null, walletString);
-                        ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendFunds(new TransferRequestDto(senderWallet, receiverWallet, amount));
+                        ResponseWrapperDto<TransactionResponseDto> sendResponse = blockchainGateway.sendMTVFunds(new TransferRequestDto(senderWallet, receiverWallet, amount));
                         if (sendResponse.hasErrors() || sendResponse.getResponse() == null || StringUtils.isBlank(sendResponse.getResponse().getTransactionHash())) {
                             throw new TipBotErrorException(sendResponse.getErrorMessage());
                         } else {

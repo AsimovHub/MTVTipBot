@@ -4,14 +4,12 @@ import ac.asimov.mtvtipbot.commands.*;
 import ac.asimov.mtvtipbot.dtos.ResponseWrapperDto;
 import ac.asimov.mtvtipbot.model.User;
 import ac.asimov.mtvtipbot.service.UserService;
-import jdk.dynalink.beans.StaticClass;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -35,6 +33,8 @@ public class MTVTipBot extends TelegramLongPollingCommandBot {
                      RegisterCommand registerCommand,
                      MTVTipCommand mtvTipCommand,
                      MTVSendCommand mtvSendCommand,
+                     ISAACTipCommand isaacTipCommand,
+                     ISAACSendCommand isaacSendCommand,
                      AccountCommand accountCommand,
                      BalanceCommand balanceCommand,
                      WithdrawCommand withdrawCommand,
@@ -50,6 +50,9 @@ public class MTVTipBot extends TelegramLongPollingCommandBot {
 
         register(mtvTipCommand);
         register(mtvSendCommand);
+
+        register(isaacTipCommand);
+        register(isaacSendCommand);
 
         register(accountCommand);
         register(balanceCommand);
